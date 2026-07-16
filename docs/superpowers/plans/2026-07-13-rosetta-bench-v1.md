@@ -2052,15 +2052,19 @@ cp "../rosetta/docs/decisions/rosetta_build.cpn" corpus/rosetta_build/machine.cp
 
 - [ ] **Step 2: Write `corpus/rosetta_build/answer_key.yaml`**
 
-Base the questions on the actual fields in `docs/decisions/rosetta_build.fields.json` from the `rosetta` repo (`DECISION_COUNT`, `FIELD_VALUE_TYPES`, `CONFLICT_POLICY`). Read that file to confirm exact values before writing this, since it's the ground truth the answer key must match.
+Base the questions on the actual fields in `docs/decisions/rosetta_build.fields.json` from the `rosetta` repo. Read that file to confirm exact values before writing this, since it's the ground truth the answer key must match -- the fields present as of Rosetta's own Task 11/12 are `CACHE_STABILITY`, `CONFLICT_POLICY`, `FIELD_VALUE_TYPES`, `NORMAL_PROMPT_VIEW`, `RUNTIME_FALLBACK`, and `TASK` (no `DECISION_COUNT` field exists -- an earlier draft of this plan assumed one before the actual file was checked).
 
 ```yaml
-- question: "What is the value of DECISION_COUNT?"
-  answer: "3"
-- question: "What does FIELD_VALUE_TYPES list as the allowed types?"
-  answer: "str,int,float"
-- question: "What is the CONFLICT_POLICY?"
+- question: "What does CONFLICT_POLICY say about how sync conflicts are resolved?"
   answer: "explicit,no-auto-merge"
+- question: "What is the value of NORMAL_PROMPT_VIEW?"
+  answer: "CPN"
+- question: "What is RUNTIME_FALLBACK set to?"
+  answer: "human-markdown"
+- question: "What does FIELD_VALUE_TYPES list as the allowed field value types?"
+  answer: "str,int,float"
+- question: "What does CACHE_STABILITY describe?"
+  answer: "canonical-key-order,LF,fixed-floats"
 ```
 
 - [ ] **Step 3: Write `corpus/rosetta_build/task_spec.yaml`**
@@ -2069,9 +2073,10 @@ Base the questions on the actual fields in `docs/decisions/rosetta_build.fields.
 name: summarize_for_new_teammate
 instructions: >
   Summarize this policy record for a new teammate joining the Rosetta project
-  in 3 bullet points. Explicitly call out DECISION_COUNT, FIELD_VALUE_TYPES,
-  and CONFLICT_POLICY, and explain in one sentence why CONFLICT_POLICY is set
-  the way it is (see the notes/decisions text in the document for the reason).
+  in 3 bullet points. Explicitly call out NORMAL_PROMPT_VIEW, RUNTIME_FALLBACK,
+  and CONFLICT_POLICY, and explain in one sentence why numeric packet values
+  are recovered via the JSON Schema rather than type-guessed (see the notes
+  in the document for the reason).
 reference_output: null
 ```
 
@@ -2082,8 +2087,8 @@ python -c "
 from pathlib import Path
 from rosetta_bench.corpus import load_case
 case = load_case(Path('corpus'), 'rosetta_build')
-assert 'DECISION_COUNT' in case.machine_text
-assert len(case.answer_key) == 3
+assert 'CONFLICT_POLICY' in case.machine_text
+assert len(case.answer_key) == 5
 assert case.task_spec['name'] == 'summarize_for_new_teammate'
 print('OK')
 "

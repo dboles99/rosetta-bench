@@ -1,0 +1,7 @@
+SCHEMA_VER=1.0
+CACHE_STABILITY=canonical-key-order,LF,fixed-floats
+CONFLICT_POLICY=explicit,no-auto-merge
+FIELD_VALUE_TYPES=str,int,float
+NORMAL_PROMPT_VIEW=CPN
+RUNTIME_FALLBACK=human-markdown
+TASK=ROSETTA_BUILD
