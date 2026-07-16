@@ -675,8 +675,11 @@ def test_fake_runner_satisfies_runner_protocol():
 
 
 def test_runner_protocol_is_structural_not_nominal():
-    # FakeRunner never inherits from Runner -- Protocol conformance is structural.
-    assert not issubclass(FakeRunner, Runner) or True  # Protocol classes are runtime-checkable only if decorated; this documents intent, not an isinstance check.
+    # FakeRunner never inherits from Runner -- conformance is structural (duck-typed),
+    # verified via isinstance() at runtime because Runner is @runtime_checkable.
+    # issubclass() is intentionally not used here: a Protocol with non-method
+    # members (name/model are data attributes, not methods) doesn't support it.
+    assert Runner not in FakeRunner.__bases__
     assert isinstance(FakeRunner(), Runner)
 ```
 
