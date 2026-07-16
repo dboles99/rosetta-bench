@@ -1,0 +1,29 @@
+[project]
+name = "rosetta-bench"
+version = "0.1.0"
+description = "Human-readable vs. machine-readable prompt benchmark for Rosetta"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+    "openpyxl>=3.1",
+    "gspread>=6.0",
+    "google-auth>=2.29",
+    "anthropic>=0.34",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+bench = "rosetta_bench.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
