@@ -80,7 +80,7 @@ rosetta-bench/
 **Interfaces:**
 - Produces: an installable package `rosetta_bench` importable from `tests/`.
 
-- [ ] **Step 1: Create `pyproject.toml`**
+- [x] **Step 1: Create `pyproject.toml`**
 
 ```toml
 [project]
@@ -114,7 +114,7 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 ```
 
-- [ ] **Step 2: Create `.gitignore`**
+- [x] **Step 2: Create `.gitignore`**
 
 ```
 .venv/
@@ -126,7 +126,7 @@ storage/trials.csv
 *.egg-info/
 ```
 
-- [ ] **Step 3: Create `.env.example`**
+- [x] **Step 3: Create `.env.example`**
 
 ```
 ANTHROPIC_API_KEY=
@@ -140,19 +140,19 @@ OLLAMA_HOST=http://localhost:11434
 GOOGLE_SERVICE_ACCOUNT_JSON=
 ```
 
-- [ ] **Step 4: Create the empty package `src/rosetta_bench/__init__.py`**
+- [x] **Step 4: Create the empty package `src/rosetta_bench/__init__.py`**
 
 ```python
 """Rosetta-bench: human-readable vs. machine-readable prompt benchmark."""
 ```
 
-- [ ] **Step 5: Install in editable/dev mode and verify pytest collects zero tests without error**
+- [x] **Step 5: Install in editable/dev mode and verify pytest collects zero tests without error**
 
 Run: `pip install -e ".[dev]"`
 Then run: `pytest -q`
 Expected: `no tests ran` (exit code 5) or `0 items` — no import errors.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add pyproject.toml .gitignore .env.example src/rosetta_bench/__init__.py
@@ -172,7 +172,7 @@ git commit -m "Scaffold rosetta-bench package"
 **Interfaces:**
 - Produces: `Task(name: str, instructions: str, reference_output: str | None = None)`, `RunResult(raw_output: str, tokens_in: int, tokens_out: int, latency_ms: float, turns: int = 1)`, `Trial` (the full CSV-row schema from the spec, with `.to_row() -> dict` returning columns in canonical order). Used by every later task.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_models.py
@@ -212,12 +212,12 @@ def test_trial_to_row_has_canonical_columns_in_order():
     assert row["comprehension_accuracy"] == 0.9
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_models.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.models'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/models.py
@@ -282,12 +282,12 @@ class Trial:
         }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_models.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/models.py tests/test_models.py
@@ -308,7 +308,7 @@ git commit -m "Add Task/RunResult/Trial data models"
 - Consumes: nothing from earlier tasks.
 - Produces: `estimate_cost(tool: str, model: str, tokens_in: int, tokens_out: int) -> float`. Used by `harness.py` (Task 12).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_pricing.py
@@ -332,12 +332,12 @@ def test_ollama_local_model_is_free():
     assert estimate_cost("OLLAMA", "llama3", tokens_in=100000, tokens_out=100000) == 0.0
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_pricing.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.pricing'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/pricing.py
@@ -356,12 +356,12 @@ def estimate_cost(tool: str, model: str, tokens_in: int, tokens_out: int) -> flo
     return (tokens_in / 1000) * price_in + (tokens_out / 1000) * price_out
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_pricing.py -v`
 Expected: 4 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/pricing.py tests/test_pricing.py
@@ -382,7 +382,7 @@ git commit -m "Add per-token cost estimation"
 - Consumes: nothing from earlier tasks.
 - Produces: `Case(case_id: str, human_text: str, machine_text: str, answer_key: list[dict], task_spec: dict)` and `load_case(corpus_dir: Path, case_id: str) -> Case`. Used by `harness.py` (Task 12).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_corpus.py
@@ -413,12 +413,12 @@ def test_load_case_reads_all_four_files(tmp_path: Path):
     assert case.task_spec == {"name": "validate", "instructions": "do the thing", "reference_output": None}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_corpus.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.corpus'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/corpus.py
@@ -451,12 +451,12 @@ def load_case(corpus_dir: Path, case_id: str) -> Case:
     )
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_corpus.py -v`
 Expected: 1 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/corpus.py tests/test_corpus.py
@@ -477,7 +477,7 @@ git commit -m "Add corpus case loader"
 - Consumes: nothing from earlier tasks (pure functions plus an injected `call_fn`).
 - Produces: `JudgeResult(correctness: int, completeness: int, faithfulness: int, clarity: int, justification: str)` with a `.mean_score -> float` property, `build_judge_prompt(task_instructions: str, raw_output: str, reference_output: str | None) -> str`, `parse_judge_response(response_text: str) -> JudgeResult`, and `score_trial(task_instructions: str, raw_output: str, reference_output: str | None, call_fn: Callable[[str], str]) -> JudgeResult`. Used by `harness.py` (Task 12).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_judge.py
@@ -538,12 +538,12 @@ def test_parse_judge_response_raises_on_missing_field():
         parse_judge_response("CORRECTNESS: 4\nJUSTIFICATION: incomplete response\n")
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_judge.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.judge'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/judge.py
@@ -625,12 +625,12 @@ def score_trial(
     return parse_judge_response(response_text)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_judge.py -v`
 Expected: 6 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/judge.py tests/test_judge.py
@@ -652,7 +652,7 @@ git commit -m "Add LLM-as-judge scoring"
 - Consumes: `RunResult`, `Task` (Task 2).
 - Produces: `Runner` (a `typing.Protocol` with `name: str`, `model: str`, and `run(self, prompt_text: str, task: Task | None) -> RunResult`). Used by every runner (Tasks 7-10) and `harness.py` (Task 12).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_runners_base.py
@@ -683,12 +683,12 @@ def test_runner_protocol_is_structural_not_nominal():
     assert isinstance(FakeRunner(), Runner)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_runners_base.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.runners'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/runners/__init__.py
@@ -710,12 +710,12 @@ class Runner(Protocol):
         ...
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_runners_base.py -v`
 Expected: 2 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/runners/__init__.py src/rosetta_bench/runners/base.py tests/test_runners_base.py
@@ -736,7 +736,7 @@ git commit -m "Add Runner protocol"
 - Consumes: `RunResult`, `Task` (Task 2).
 - Produces: `AnthropicClientProtocol` (a `typing.Protocol` with `create_message(self, model: str, prompt: str) -> tuple[str, int, int]`, returning `(response_text, input_tokens, output_tokens)`), `ClaudeRunner(model: str, client: AnthropicClientProtocol)` implementing the `Runner` protocol from Task 6. Used by `harness.py` (Task 12). A real `AnthropicSDKClient` adapter wrapping the `anthropic` package is included but is explicitly excluded from the automated test suite (documented in a module docstring) since it requires a live `ANTHROPIC_API_KEY` and makes a real network call — this satisfies the Global Constraint that no test makes a real network call.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_claude_runner.py
@@ -787,12 +787,12 @@ def test_runner_exposes_name_and_model():
     assert runner.model == "claude-sonnet-5"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_claude_runner.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.runners.claude_runner'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/runners/claude_runner.py
@@ -852,12 +852,12 @@ class AnthropicSDKClient:
         return text, response.usage.input_tokens, response.usage.output_tokens
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_claude_runner.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/runners/claude_runner.py tests/test_claude_runner.py
@@ -878,7 +878,7 @@ git commit -m "Add Claude runner"
 - Consumes: `RunResult`, `Task` (Task 2).
 - Produces: `AzureOpenAIClientProtocol` (`create_completion(self, deployment: str, prompt: str) -> tuple[str, int, int]`), `AzureOpenAIRunner(deployment: str, client: AzureOpenAIClientProtocol)` implementing `Runner`. A live `AzureOpenAISDKClient` adapter is included, excluded from the test suite (needs `AZURE_OPENAI_API_KEY`/`AZURE_OPENAI_ENDPOINT`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_azure_openai_runner.py
@@ -928,12 +928,12 @@ def test_runner_exposes_name_and_model():
     assert runner.model == "gpt-4o"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_azure_openai_runner.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.runners.azure_openai_runner'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/runners/azure_openai_runner.py
@@ -991,12 +991,12 @@ class AzureOpenAISDKClient:
         return text, response.usage.prompt_tokens, response.usage.completion_tokens
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_azure_openai_runner.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/runners/azure_openai_runner.py tests/test_azure_openai_runner.py
@@ -1017,7 +1017,7 @@ git commit -m "Add Azure OpenAI runner"
 - Consumes: `RunResult`, `Task` (Task 2).
 - Produces: `OllamaClientProtocol` (`generate(self, model: str, prompt: str) -> tuple[str, int, int]`), `OllamaRunner(model: str, client: OllamaClientProtocol)` implementing `Runner`. A live `OllamaHTTPClient` adapter (plain HTTP via stdlib `urllib.request`, no extra dependency, since Ollama's local server has no official Python SDK dependency requirement here) is included, excluded from the test suite (needs a running local Ollama server).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_ollama_runner.py
@@ -1067,12 +1067,12 @@ def test_runner_exposes_name_and_model():
     assert runner.model == "llama3"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_ollama_runner.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.runners.ollama_runner'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/runners/ollama_runner.py
@@ -1134,12 +1134,12 @@ class OllamaHTTPClient:
         return data["response"], data.get("prompt_eval_count", 0), data.get("eval_count", 0)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_ollama_runner.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/runners/ollama_runner.py tests/test_ollama_runner.py
@@ -1160,7 +1160,7 @@ git commit -m "Add Ollama runner"
 - Consumes: `RunResult`, `Task` (Task 2).
 - Produces: `AzureTranslationClientProtocol` (`translate(self, text: str, to_language: str) -> str`), `AzureTranslationRunner(client: AzureTranslationClientProtocol, round_trip_language: str = "fr")` implementing `Runner`. Unlike the other three runners, `run()` ignores `task` entirely (raises `ValueError` if a `Task` is passed, since this runner is Suite-A-only per the spec) and instead performs a round-trip translation (`prompt_text` -> `round_trip_language` -> back to English) as the "output" to be scored for comprehension. A live `AzureTranslatorSDKClient` adapter is included, excluded from the test suite (needs `AZURE_TRANSLATOR_API_KEY`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_azure_translation_runner.py
@@ -1205,12 +1205,12 @@ def test_runner_exposes_name_and_model():
     assert runner.model == "de"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_azure_translation_runner.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.runners.azure_translation_runner'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/runners/azure_translation_runner.py
@@ -1284,12 +1284,12 @@ class AzureTranslatorSDKClient:
         return data[0]["translations"][0]["text"]
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_azure_translation_runner.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/runners/azure_translation_runner.py tests/test_azure_translation_runner.py
@@ -1310,7 +1310,7 @@ git commit -m "Add Azure Translation runner (Suite A only)"
 - Consumes: `Trial` (Task 2, `.to_row()`).
 - Produces: `append_trial(trial: Trial, path: Path) -> None` (creates the file with a header row if it doesn't exist, appends otherwise) and `load_trials(path: Path) -> list[dict]`. Used by `harness.py` (Task 12) and both exporters (Tasks 13-14).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_storage.py
@@ -1351,12 +1351,12 @@ def test_append_trial_appends_without_duplicating_header(tmp_path: Path):
     assert header_line.count("trial_id") == 1
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_storage.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.storage'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/storage.py
@@ -1387,12 +1387,12 @@ def load_trials(path: Path) -> list[dict]:
         return list(csv.DictReader(f))
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_storage.py -v`
 Expected: 2 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/storage.py tests/test_storage.py
@@ -1413,7 +1413,7 @@ git commit -m "Add trial CSV storage (append + load)"
 - Consumes: `Case` (Task 4), `Runner`/`RunResult`/`Task` (Tasks 2, 6), `score_trial`/`JudgeCallFn` (Task 5), `estimate_cost` (Task 3), `append_trial` (Task 11).
 - Produces: `run_trial(runner: Runner, case: Case, prompt_format: str, suite: str, judge_call_fn: JudgeCallFn | None, trial_id: str, timestamp: str) -> Trial`. `prompt_format` is `"HUMAN"` or `"MACHINE"` (selects `case.human_text`/`case.machine_text`); `suite` is `"COMPREHENSION"` or `"TASK_COMPLETION"`. For `COMPREHENSION`, no `Task` is passed to the runner and `comprehension_accuracy` is left `None` in this task (scoring the answer against `answer_key` is a separate concern noted as an open item, not built here — see Task 12's Step 3 comment). For `TASK_COMPLETION`, a `Task` built from `case.task_spec` is passed to the runner, and if `judge_call_fn` is provided, `score_trial` is called and `quality_score`/`judge_justification` are populated.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_harness.py
@@ -1485,12 +1485,12 @@ def test_task_completion_trial_invokes_judge_when_provided():
     assert "Solid" in trial.judge_justification
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_harness.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.harness'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/harness.py
@@ -1554,12 +1554,12 @@ def run_trial(
     )
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_harness.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/harness.py tests/test_harness.py
@@ -1580,7 +1580,7 @@ git commit -m "Add harness trial orchestration"
 - Consumes: `load_trials` (Task 11).
 - Produces: `export_to_xlsx(csv_path: Path, xlsx_path: Path) -> None`. Writes a workbook with two sheets: `raw_data` (every row/column from the CSV, header included) and `summary` (mean `latency_ms`, mean `tokens_in`, mean `tokens_out`, mean `quality_score`, mean `cost_usd`, grouped by `(tool, prompt_format)`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_export_xlsx.py
@@ -1625,12 +1625,12 @@ def test_export_creates_raw_data_and_summary_sheets(tmp_path: Path):
     assert machine_row[7] == 2  # n
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_export_xlsx.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.export_xlsx'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/export_xlsx.py
@@ -1685,12 +1685,12 @@ def export_to_xlsx(csv_path: Path, xlsx_path: Path) -> None:
     workbook.save(xlsx_path)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_export_xlsx.py -v`
 Expected: 1 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/export_xlsx.py tests/test_export_xlsx.py
@@ -1711,7 +1711,7 @@ git commit -m "Add xlsx export with raw-data and summary sheets"
 - Consumes: `load_trials` (Task 11).
 - Produces: `GSpreadClientProtocol` (`open_or_create(self, sheet_name: str) -> "SpreadsheetProtocol"`, where `SpreadsheetProtocol` has `update_sheet(self, worksheet_name: str, rows: list[list])`), `export_to_sheets(csv_path: Path, sheet_name: str, client: GSpreadClientProtocol) -> None`, mirroring `export_to_xlsx`'s two-sheet structure (`raw_data`, `summary`) but writing via the injected client instead of a file. A live `GSpreadClient` adapter wrapping the real `gspread` package (using `GOOGLE_SERVICE_ACCOUNT_JSON`) is included, excluded from the test suite (needs live Google credentials).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_export_sheets.py
@@ -1764,12 +1764,12 @@ def test_export_opens_named_sheet_and_writes_both_worksheets(tmp_path: Path):
     assert raw_rows[1][0] == "t1"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_export_sheets.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.export_sheets'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/export_sheets.py
@@ -1865,12 +1865,12 @@ class _GSpreadSpreadsheetAdapter:
             worksheet.update(rows)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_export_sheets.py -v`
 Expected: 1 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/export_sheets.py tests/test_export_sheets.py
@@ -1891,7 +1891,7 @@ git commit -m "Add Google Sheets export"
 - Consumes: `export_to_xlsx` (Task 13), `export_to_sheets`/`GSpreadClient` (Task 14). `run` subcommand wiring to the harness/runners is deliberately deferred (see Step 3's comment) since it requires live credentials to be meaningful and is exercised manually, not by this task's tests — this task covers the `export` subcommands fully, and stubs `run` with a clear NotImplementedError message rather than pretending to wire up untestable live-API orchestration.
 - Produces: `main(argv: list[str] | None = None) -> int`, wired as the `bench` console script via `pyproject.toml` (Task 1). Subcommands: `export xlsx --csv PATH --out PATH`, `export sheets --csv PATH --sheet-name NAME` (requires `GOOGLE_SERVICE_ACCOUNT_JSON` env var), `run` (prints a message directing the user to invoke the harness directly with real credentials; not part of this task's automated scope).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_cli.py
@@ -1930,12 +1930,12 @@ def test_run_command_returns_nonzero_and_explains_manual_invocation(capsys):
     assert "not automated" in captured.err.lower() or "credentials" in captured.err.lower()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_cli.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_bench.cli'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_bench/cli.py
@@ -2014,12 +2014,12 @@ if __name__ == "__main__":
     raise SystemExit(main())
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_cli.py -v`
 Expected: 2 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_bench/cli.py tests/test_cli.py
@@ -2041,7 +2041,7 @@ git commit -m "Add bench CLI: export xlsx/sheets, run stub"
 **Interfaces:**
 - Produces: the first real corpus case, loadable via `load_case(Path("corpus"), "rosetta_build")` (Task 4).
 
-- [ ] **Step 1: Copy Rosetta's dogfooded artifact files**
+- [x] **Step 1: Copy Rosetta's dogfooded artifact files**
 
 ```bash
 cp "../rosetta/docs/decisions/rosetta_build.md" corpus/rosetta_build/human.md
@@ -2050,7 +2050,7 @@ cp "../rosetta/docs/decisions/rosetta_build.cpn" corpus/rosetta_build/machine.cp
 
 (Adjust the relative path if your `rosetta` checkout is elsewhere; the source files are `docs/decisions/rosetta_build.md` and `docs/decisions/rosetta_build.cpn` in the `rosetta` repo's `master` branch, produced by Rosetta's own Task 11.)
 
-- [ ] **Step 2: Write `corpus/rosetta_build/answer_key.yaml`**
+- [x] **Step 2: Write `corpus/rosetta_build/answer_key.yaml`**
 
 Base the questions on the actual fields in `docs/decisions/rosetta_build.fields.json` from the `rosetta` repo. Read that file to confirm exact values before writing this, since it's the ground truth the answer key must match -- the fields present as of Rosetta's own Task 11/12 are `CACHE_STABILITY`, `CONFLICT_POLICY`, `FIELD_VALUE_TYPES`, `NORMAL_PROMPT_VIEW`, `RUNTIME_FALLBACK`, and `TASK` (no `DECISION_COUNT` field exists -- an earlier draft of this plan assumed one before the actual file was checked).
 
@@ -2067,7 +2067,7 @@ Base the questions on the actual fields in `docs/decisions/rosetta_build.fields.
   answer: "canonical-key-order,LF,fixed-floats"
 ```
 
-- [ ] **Step 3: Write `corpus/rosetta_build/task_spec.yaml`**
+- [x] **Step 3: Write `corpus/rosetta_build/task_spec.yaml`**
 
 ```yaml
 name: summarize_for_new_teammate
@@ -2080,7 +2080,7 @@ instructions: >
 reference_output: null
 ```
 
-- [ ] **Step 4: Verify the corpus case loads correctly**
+- [x] **Step 4: Verify the corpus case loads correctly**
 
 ```bash
 python -c "
@@ -2096,7 +2096,7 @@ print('OK')
 
 Expected: `OK`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add corpus/rosetta_build/
@@ -2115,7 +2115,7 @@ git commit -m "Add rosetta_build corpus case from Rosetta's dogfooded artifact"
 **Interfaces:**
 - Consumes: `load_case` (Task 4), `run_trial` (Task 12), `append_trial`/`load_trials` (Task 11), `export_to_xlsx` (Task 13).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_end_to_end.py
@@ -2164,19 +2164,19 @@ def test_full_lifecycle_load_corpus_run_both_formats_export(tmp_path: Path):
     assert xlsx_path.exists()
 ```
 
-- [ ] **Step 2: Run test to verify it passes immediately**
+- [x] **Step 2: Run test to verify it passes immediately**
 
 This task adds no new production code — every function it calls (`load_case`, `run_trial`, `append_trial`, `load_trials`, `export_to_xlsx`) is already implemented and independently tested. This test only verifies they compose correctly end-to-end using the real `corpus/rosetta_build` fixture from Task 16, so it should pass on the first run rather than fail first.
 
 Run: `pytest tests/test_end_to_end.py -v`
 Expected: PASS immediately. If it fails, the bug is in an already-committed task's code (or Task 16's fixture files don't match what this test expects), not in this test — stop and fix the earlier task.
 
-- [ ] **Step 3: Run the full test suite**
+- [x] **Step 3: Run the full test suite**
 
 Run: `pytest -v`
 Expected: all tests across every task pass.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add tests/test_end_to_end.py
