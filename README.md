@@ -1,5 +1,7 @@
 # rosetta-bench
 
+**[Read the wiki](https://github.com/dboles99/rosetta-bench/wiki)** for how it works, the evidence, the design decisions and the limits.
+
 A small Python harness for comparing how language-model tools handle the same prompt written in two forms: a verbose human-readable Markdown document and a compact machine-readable packet.
 
 **简体中文：** rosetta-bench 用同一份提示词的两种写法（详细的 Markdown 文档与紧凑的 `KEY=VALUE` 数据包）去测试不同的大模型工具，记录耗时、词元数、费用和由模型评委给出的质量分，并导出为 CSV 与 Excel。目前它是一个带测试的框架，尚未发布任何真实模型的测试结果。
