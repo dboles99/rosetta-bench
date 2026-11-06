@@ -1,0 +1,8 @@
+name: summarize_for_new_teammate
+instructions: >
+  Summarize this policy record for a new teammate joining the Rosetta project
+  in 3 bullet points. Explicitly call out NORMAL_PROMPT_VIEW, RUNTIME_FALLBACK,
+  and CONFLICT_POLICY, and explain in one sentence why numeric packet values
+  are recovered via the JSON Schema rather than type-guessed (see the notes
+  in the document for the reason).
+reference_output: null
