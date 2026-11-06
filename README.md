@@ -21,7 +21,7 @@ Cost comes from a small static price table in `src/rosetta_bench/pricing.py`. It
 Needs Python 3.11 or later. The tests and the demo need no API key and no network access.
 
 ```bash
-git clone <this repository>
+git clone https://github.com/dboles99/rosetta-bench.git
 cd rosetta-bench
 python -m venv .venv
 .venv/bin/pip install -e ".[dev]"      # Windows: .venv\Scripts\pip install -e ".[dev]"
