@@ -141,12 +141,12 @@ class _VersionedFake:
         return HttpResponse(200, reply.headers, json.dumps(body).encode())
 
 
-def _versioned_run(tmp_path: Path, served: str, expected: str) -> list[dict]:
+def _versioned_run(tmp_path: Path, served: str, expected: str, base: str = "fake") -> list[dict]:
     from dataclasses import replace
 
     from rosetta_bench.decision.shadow import run_shadow
 
-    profile = replace(PROFILES["fake"], expected_served_model=expected)
+    profile = replace(PROFILES[base], expected_served_model=expected)
     out = run_shadow(CORPUS, profile, FakeTransport(_VersionedFake(served)), tmp_path / served, seed=3)
     return _lines(out / "decisions.jsonl")
 
@@ -172,7 +172,8 @@ def test_jevmodel_profile_expects_the_revision_seen_by_the_probe():
 
 def test_clef_profile_expects_its_unversioned_served_name(tmp_path: Path):
     assert PROFILES["clef-ollama"].expected_served_model == "clef"
-    decisions = _versioned_run(tmp_path, served="clef", expected="clef")
+    # clef-ollama's own profile (pins_versions False), served through the offline fake transport
+    decisions = _versioned_run(tmp_path, served="clef", expected="clef", base="clef-ollama")
     assert not any("CALIBRATION_STALE" in d["reason_codes"] for d in decisions)
     receipts = _lines(tmp_path / "clef" / "receipts.jsonl")
     called = [r for r in receipts if r["provider"]["served_model"]]
