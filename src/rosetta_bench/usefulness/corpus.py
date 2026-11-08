@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from rosetta_core.human_doc import extract_notes
 from rosetta_core.loader import load_prompt
 
 
@@ -29,14 +30,29 @@ def route_ids(corpus_dir: Path) -> list[str]:
     return sorted(p.name for p in (Path(corpus_dir) / "routes").iterdir() if p.is_dir())
 
 
-def route_contract(corpus_dir: Path, route_id: str, prompt_format: str) -> str:
-    """HUMAN: the Markdown view. MACHINE: rosetta-core's loader (valid packet first,
-    Markdown only as a full replacement), exactly as a Rosetta consumer would load it."""
+REPRESENTATIONS = {
+    "P": "plain prose prompt (the contract's hand-written notes, no Rosetta structure)",
+    "H": "Rosetta human view (.md: generated field list plus notes)",
+    "M": "Rosetta machine view (.cpn packet, loaded by rosetta_core.loader)",
+}
+_ALIASES = {"PLAIN": "P", "HUMAN": "H", "MACHINE": "M"}
+
+
+def route_contract(corpus_dir: Path, route_id: str, representation: str) -> str:
+    """P: plain prose from the notes region (extracted by rosetta-core). H: the Markdown
+    view. M: rosetta-core's loader (valid packet first, Markdown only as a full
+    replacement), exactly as a Rosetta consumer would load it."""
+    rep = _ALIASES.get(representation, representation)
     folder = Path(corpus_dir) / "routes" / route_id
-    if prompt_format == "HUMAN":
-        return (folder / f"{route_id}.md").read_text(encoding="utf-8")
-    schema = json.loads((folder / f"{route_id}.schema.json").read_text(encoding="utf-8"))
-    return load_prompt(route_id, folder, schema)
+    markdown = (folder / f"{route_id}.md").read_text(encoding="utf-8")
+    if rep == "P":
+        return extract_notes(markdown) + "\n"
+    if rep == "H":
+        return markdown
+    if rep == "M":
+        schema = json.loads((folder / f"{route_id}.schema.json").read_text(encoding="utf-8"))
+        return load_prompt(route_id, folder, schema)
+    raise ValueError(f"unknown representation {representation!r}")
 
 
 def corpus_digest(corpus_dir: Path) -> str:

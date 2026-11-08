@@ -74,4 +74,18 @@ PROFILES: dict[str, ProviderProfile] = {
         notes="Offline synthetic keyword-overlap provider. Not a model.",
         expected_served_model="fake-systemone-1",
     ),
+    "fake-b": ProviderProfile(
+        name="fake-b",
+        endpoint="fake://systemone-b",
+        api_key_env=None,
+        default_model="fake-systemone-b",
+        pricing_tool="FAKE",
+        max_questions_per_call=64,
+        max_choice_options=26,
+        score_base=None,
+        pins_versions=True,
+        supports_idempotency_key=False,
+        notes="Second offline synthetic provider with a higher route-fit bias, for consensus tests. Not a model.",
+        expected_served_model="fake-systemone-b",
+    ),
 }

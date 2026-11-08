@@ -19,7 +19,9 @@ def _evidence_text(state: dict) -> str:
 
 
 class FakeSystemOne:
-    model = "fake-systemone-1"
+    def __init__(self, model: str = "fake-systemone-1", fit_bias: float = 0.0):
+        self.model = model
+        self.fit_bias = fit_bias  # a second fake with a different bias makes consensus testable
 
     def __call__(self, request: dict) -> HttpResponse:
         state = request.get("state", {})
@@ -46,7 +48,7 @@ class FakeSystemOne:
                     "probabilities": [round(1 / n, 6)] * n, "confidence": 0.0,
                 }
             else:
-                p_yes = min(0.95, 0.1 + 0.25 * best_route_overlap) if qid == "route_fits" else 0.5
+                p_yes = min(0.95, 0.1 + self.fit_bias + 0.25 * best_route_overlap) if qid == "route_fits" else 0.5
                 answers[qid] = {"type": "noul", "noul": round(p_yes, 6)}
         body = {"model": self.model, "answers": answers, "usage": {"input_tokens": len(json.dumps(request).split()), "output_tokens": 0}}
         return HttpResponse(200, {"content-type": "application/json"}, json.dumps(body).encode("utf-8"))

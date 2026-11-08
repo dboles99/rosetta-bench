@@ -148,10 +148,8 @@ def _usefulness_command(args) -> int:
         print(f"usefulness run not started: {message}", file=sys.stderr)
         return 2
 
-    try:
-        arms = pipeline.arm_specs([a.strip() for a in args.arms.split(",") if a.strip()], args.postflight)
-    except ValueError as exc:
-        return fail(str(exc))
+    reps = [r.strip() for r in args.reps.split(",") if r.strip()]
+    deciders = [d.strip() for d in args.deciders.split(",") if d.strip()]
     out = Path(args.out)
     if (out / "manifest.json").exists():
         return fail(f"a run already exists in {out}")
@@ -174,30 +172,34 @@ def _usefulness_command(args) -> int:
                 "timeout_s": args.generator_timeout, "settings": settings}
     generator = pipeline.BudgetedGenerator(generator, args.max_generator_calls)
 
-    decision = None
-    if args.decision != "none":
-        profile = PROFILES.get(args.decision)
+    providers = {}
+    for name in deciders:
+        if name in (pipeline.NO_DECIDER, pipeline.CONSENSUS):
+            continue
+        profile = PROFILES.get(name)
         if profile is None:
-            return fail(f"unknown decision provider {args.decision!r}")
-        if profile.name == "fake":
-            transport, key = FakeTransport(FakeSystemOne()), None
+            return fail(f"unknown decision provider {name!r}; choose from {sorted(PROFILES)}")
+        if profile.pricing_tool == "FAKE":
+            fake = FakeSystemOne(model=profile.default_model, fit_bias=0.25 if name == "fake-b" else 0.0)
+            transport, key = FakeTransport(fake), None
         else:
-            live_parts.append("decision")
+            live_parts.append(name)
             if not args.live:
-                return fail(f"decision provider '{profile.name}' makes network calls; add --live to confirm")
+                return fail(f"decision provider '{name}' makes network calls; add --live to confirm")
             key = os.environ.get(profile.api_key_env) if profile.api_key_env else None
             if profile.api_key_env and not key:
                 return fail(f"{profile.api_key_env} is not set in this environment")
             if args.max_decision_calls is None:
-                return fail("live runs need an explicit --max-decision-calls budget (retries count as calls)")
+                return fail("live runs need an explicit --max-decision-calls budget per provider (retries count as calls)")
             transport = UrllibTransport()
         if args.max_decision_calls is not None:
             transport = BudgetTransport(transport, args.max_decision_calls)
-        decision = (profile, transport, key)
+        providers[name] = (profile, transport, key)
 
+    postflight_reps = tuple(r.strip() for r in args.postflight_reps.split(",") if r.strip())
     try:
-        pipeline.run_usefulness(Path(args.corpus), arms, generator, meta, out, seed=args.seed,
-                                live=bool(live_parts), decision=decision)
+        pipeline.run_matrix(Path(args.corpus), reps, deciders, generator, meta, out, seed=args.seed,
+                            live=bool(live_parts), providers=providers, postflight_reps=postflight_reps)
     except (ValueError, FileExistsError) as exc:
         return fail(str(exc))
     print(f"wrote {out}")
@@ -256,13 +258,13 @@ def main(argv: list[str] | None = None) -> int:
     usefulness_subparsers = usefulness_parser.add_subparsers(dest="usefulness_command", required=True)
     useful_run = usefulness_subparsers.add_parser("run")
     useful_run.add_argument("--corpus", default="corpus/usefulness_v1")
-    useful_run.add_argument("--arms", default="A,B,C")
+    useful_run.add_argument("--reps", default="P,H,M", help="P plain prompt, H Rosetta .md, M Rosetta .cpn")
+    useful_run.add_argument("--deciders", default="none", help="none, provider profiles (jevmodel, clef-ollama, fake, fake-b), consensus")
+    useful_run.add_argument("--postflight-reps", default="", help="representations whose generated code gets an advisory postflight check")
     useful_run.add_argument("--generator", choices=("fake", "ollama"), default="fake")
     useful_run.add_argument("--generator-model", default="kimi-k2.7-code:cloud")
     useful_run.add_argument("--ollama-host", default="http://localhost:11434")
     useful_run.add_argument("--generator-timeout", type=float, default=300.0)
-    useful_run.add_argument("--decision", default="none")
-    useful_run.add_argument("--postflight", action="store_true")
     useful_run.add_argument("--live", action="store_true")
     useful_run.add_argument("--max-generator-calls", type=int, default=None)
     useful_run.add_argument("--max-decision-calls", type=int, default=None)
