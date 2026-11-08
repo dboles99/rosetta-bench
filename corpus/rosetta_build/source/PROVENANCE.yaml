@@ -1,0 +1,6 @@
+core_commit: bed5926e041debbd658dd139aa19b2a5352bf04a
+core_tree_dirty: true  # uncommitted files were the new decision/ package only; sync, cpn and human_doc unchanged
+generated_by: rosetta sync rosetta_build (bootstrap from fields.json, notes written into the notes region, sync again, validate)
+generated_on: 2026-11-09
+views: human.md and machine.cpn are byte copies of rosetta_build.md and rosetta_build.cpn
+replaces: hand-edited case at rosetta-bench 2ebf272, whose markers were not core-generated and whose notes said the lock tracked the fields store

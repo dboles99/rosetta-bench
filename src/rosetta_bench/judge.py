@@ -55,6 +55,9 @@ def parse_judge_response(response_text: str) -> JudgeResult:
     missing = [f for f in _SCORE_FIELDS if f not in scores]
     if missing:
         raise KeyError(f"judge response missing fields: {missing}")
+    out_of_range = [f for f in _SCORE_FIELDS if not 1 <= scores[f] <= 5]
+    if out_of_range:
+        raise ValueError(f"judge scores outside 1-5: {out_of_range}")
 
     return JudgeResult(
         correctness=scores["CORRECTNESS"],

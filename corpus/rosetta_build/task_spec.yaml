@@ -6,3 +6,11 @@ instructions: >
   are recovered via the JSON Schema rather than type-guessed (see the notes
   in the document for the reason).
 reference_output: null
+# Exact checks (rosetta_bench.scoring.constraints). The "why" sentence is not exact-checkable
+# and is left to secondary review. Note: the MACHINE view carries no notes region.
+constraints:
+  - {name: three_bullets, type: bullet_count, equals: 3}
+  - {name: names_normal_prompt_view, type: must_include, value: NORMAL_PROMPT_VIEW}
+  - {name: names_runtime_fallback, type: must_include, value: RUNTIME_FALLBACK}
+  - {name: names_conflict_policy, type: must_include, value: CONFLICT_POLICY}
+  - {name: no_false_lock_claim, type: must_not_include, value: "lock tracks the fields", ignore_case: true}

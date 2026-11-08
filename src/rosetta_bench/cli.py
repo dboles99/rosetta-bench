@@ -41,11 +41,40 @@ def _run_bench(args: argparse.Namespace) -> int:
     return 1
 
 
+def _run_experiment(config_path: Path, out_dir: Path) -> int:
+    from rosetta_bench.experiment.config import ConfigError, load_config
+    from rosetta_bench.experiment.runner import run_experiment
+
+    try:
+        config = load_config(config_path)
+        run_experiment(config, out_dir)
+    except (ConfigError, FileExistsError) as exc:
+        print(f"experiment not run: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {out_dir}")
+    return 0
+
+
+def _report_experiment(run_dir: Path) -> int:
+    from rosetta_bench.report import write_report
+
+    print(f"wrote {write_report(run_dir)}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="bench")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     run_parser = subparsers.add_parser("run")
+
+    experiment_parser = subparsers.add_parser("experiment")
+    experiment_subparsers = experiment_parser.add_subparsers(dest="experiment_command", required=True)
+    experiment_run = experiment_subparsers.add_parser("run")
+    experiment_run.add_argument("--config", required=True)
+    experiment_run.add_argument("--out", required=True)
+    experiment_report = experiment_subparsers.add_parser("report")
+    experiment_report.add_argument("--run", required=True)
 
     export_parser = subparsers.add_parser("export")
     export_subparsers = export_parser.add_subparsers(dest="export_format", required=True)
@@ -62,6 +91,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "run":
         return _run_bench(args)
+    if args.command == "experiment" and args.experiment_command == "run":
+        return _run_experiment(Path(args.config), Path(args.out))
+    if args.command == "experiment" and args.experiment_command == "report":
+        return _report_experiment(Path(args.run))
     if args.command == "export" and args.export_format == "xlsx":
         return _run_export_xlsx(Path(args.csv), Path(args.out))
     if args.command == "export" and args.export_format == "sheets":

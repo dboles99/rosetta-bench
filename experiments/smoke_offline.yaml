@@ -1,0 +1,12 @@
+# Offline wiring check: arms A (HUMAN) and B (MACHINE) with the synthetic fake generator.
+# Run:    bench experiment run --config experiments/smoke_offline.yaml --out <new dir outside the repo>
+# Report: bench experiment report --run <that dir>
+experiment: smoke-offline
+seed: 20261109
+corpus_dir: ../corpus
+cases: [rosetta_build]
+suites: [COMPREHENSION, TASK_COMPLETION]
+repeats: 1
+arms:
+  - {id: A, prompt_format: HUMAN, generator: {kind: fake, model: echo-1}}
+  - {id: B, prompt_format: MACHINE, generator: {kind: fake, model: echo-1}}

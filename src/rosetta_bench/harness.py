@@ -1,8 +1,32 @@
+from dataclasses import dataclass
+
 from rosetta_bench.corpus import Case
 from rosetta_bench.judge import JudgeCallFn, score_trial
-from rosetta_bench.models import Task, Trial
+from rosetta_bench.models import RunResult, Task, Trial
 from rosetta_bench.pricing import estimate_cost
 from rosetta_bench.runners.base import Runner
+from rosetta_bench.scoring.comprehension import ComprehensionScore, build_comprehension_prompt, score_comprehension
+from rosetta_bench.timing import StageTimer
+
+
+@dataclass(frozen=True)
+class ComprehensionOutcome:
+    score: ComprehensionScore
+    run_result: RunResult
+    prompt_chars: int
+
+
+def run_comprehension(runner: Runner, case: Case, prompt_format: str, timer: StageTimer | None = None) -> ComprehensionOutcome:
+    """Suite A as designed: the answer-key questions are appended to the document and
+    the reply is scored against the key. (`run_trial` keeps its v1 behaviour.)"""
+    timer = timer or StageTimer()
+    document = case.human_text if prompt_format == "HUMAN" else case.machine_text
+    prompt = build_comprehension_prompt(document, case.answer_key)
+    with timer.stage("generation"):
+        result = runner.run(prompt, None)
+    with timer.stage("scoring"):
+        score = score_comprehension(result.raw_output, case.answer_key)
+    return ComprehensionOutcome(score=score, run_result=result, prompt_chars=len(prompt))
 
 
 def run_trial(

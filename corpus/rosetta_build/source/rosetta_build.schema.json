@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "required": [
+    "CACHE_STABILITY",
+    "CONFLICT_POLICY",
+    "FIELD_VALUE_TYPES",
+    "NORMAL_PROMPT_VIEW",
+    "RUNTIME_FALLBACK",
+    "TASK",
+    "SCHEMA_VER"
+  ],
+  "properties": {
+    "CACHE_STABILITY": {
+      "type": "string"
+    },
+    "CONFLICT_POLICY": {
+      "type": "string"
+    },
+    "FIELD_VALUE_TYPES": {
+      "type": "string"
+    },
+    "NORMAL_PROMPT_VIEW": {
+      "type": "string"
+    },
+    "RUNTIME_FALLBACK": {
+      "type": "string"
+    },
+    "TASK": {
+      "type": "string"
+    },
+    "SCHEMA_VER": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    }
+  }
+}
