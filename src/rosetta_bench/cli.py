@@ -154,7 +154,11 @@ def _usefulness_command(args) -> int:
     if (out / "manifest.json").exists():
         return fail(f"a run already exists in {out}")
 
-    live_parts = []
+    from typing import Any
+
+    live_parts: list[str] = []
+    generator: Any
+    transport: Any
     if args.generator == "fake":
         generator = pipeline.FakeCodeGenerator(Path(args.corpus))
         meta = {"kind": "fake", "model": generator.model, "settings": {}}
@@ -203,6 +207,24 @@ def _usefulness_command(args) -> int:
     except (ValueError, FileExistsError) as exc:
         return fail(str(exc))
     print(f"wrote {out}")
+    return 0
+
+
+def _results_command(args) -> int:
+    from rosetta_bench import catalog
+
+    results = Path(args.results)
+    if args.results_command == "log":
+        try:
+            entry = catalog.log_run(results, Path(args.run), note=args.note)
+        except (ValueError, FileNotFoundError) as exc:
+            print(f"not logged: {exc}", file=sys.stderr)
+            return 2
+        print(f"logged {entry['path']} ({entry['kind']})")
+        return 0
+    db = Path(args.db) if args.db else results / "rosetta_bench.sqlite"
+    counts = catalog.build_db(results, db)
+    print(f"wrote {db}: {counts}")
     return 0
 
 
@@ -272,6 +294,16 @@ def main(argv: list[str] | None = None) -> int:
     useful_run.add_argument("--out", required=True)
     usefulness_subparsers.add_parser("report").add_argument("--run", required=True)
 
+    results_parser = subparsers.add_parser("results")
+    results_subparsers = results_parser.add_subparsers(dest="results_command", required=True)
+    log_parser = results_subparsers.add_parser("log")
+    log_parser.add_argument("--results", default="results")
+    log_parser.add_argument("--run", required=True)
+    log_parser.add_argument("--note", default="")
+    db_parser = results_subparsers.add_parser("db")
+    db_parser.add_argument("--results", default="results")
+    db_parser.add_argument("--db", default=None)
+
     corpus_parser = subparsers.add_parser("corpus")
     corpus_subparsers = corpus_parser.add_subparsers(dest="corpus_command", required=True)
     split_parser = corpus_subparsers.add_parser("split")
@@ -312,6 +344,8 @@ def main(argv: list[str] | None = None) -> int:
         return _corpus_command(args)
     if args.command == "usefulness":
         return _usefulness_command(args)
+    if args.command == "results":
+        return _results_command(args)
     if args.command == "export" and args.export_format == "xlsx":
         return _run_export_xlsx(Path(args.csv), Path(args.out))
     if args.command == "export" and args.export_format == "sheets":

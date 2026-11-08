@@ -6,3 +6,7 @@ __pycache__/
 storage/trials.csv
 .env
 *.egg-info/
+# derived from results/runs by `bench results db`; rebuild instead of committing
+results/*.sqlite
+# labelling sheets in progress (the imported labels.jsonl is what gets committed)
+labelling/

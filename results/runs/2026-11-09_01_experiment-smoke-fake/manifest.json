@@ -1,0 +1,55 @@
+{
+  "schema": "rosetta-bench/run-manifest@1",
+  "run_id": "run-0609dfc6a525",
+  "created_at": "2026-11-08T22:21:46.482384+00:00",
+  "experiment": "smoke-offline",
+  "synthetic": true,
+  "seed": 20261109,
+  "arms": [
+    {
+      "id": "A",
+      "prompt_format": "HUMAN",
+      "generator": {
+        "kind": "fake",
+        "model": "echo-1"
+      }
+    },
+    {
+      "id": "B",
+      "prompt_format": "MACHINE",
+      "generator": {
+        "kind": "fake",
+        "model": "echo-1"
+      }
+    }
+  ],
+  "case_ids": [
+    "rosetta_build"
+  ],
+  "case_digests": {
+    "rosetta_build": "7720b3405d32fed2c1f9f18f4f27aed7591423ffa40a9ad852507c12080ddc0d"
+  },
+  "suites": [
+    "COMPREHENSION",
+    "TASK_COMPLETION"
+  ],
+  "repeats": 1,
+  "trial_order": [
+    "t0000:B|rosetta_build|COMPREHENSION|r0",
+    "t0001:B|rosetta_build|TASK_COMPLETION|r0",
+    "t0002:A|rosetta_build|COMPREHENSION|r0",
+    "t0003:A|rosetta_build|TASK_COMPLETION|r0"
+  ],
+  "repos": {
+    "bench": {
+      "sha": "2ebf2726d31a5fecf34a3f8dd3762ac65a7f1e57",
+      "dirty": true
+    },
+    "core": null
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "notes": "Repeats are not independent cases; the case is the unit of paired resampling."
+}
