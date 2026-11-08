@@ -1,0 +1,11 @@
+{
+  "fields": {
+    "DELIVERABLE": "complete-python-module",
+    "IF_NOT_A_CODE_CHANGE": "reply NOT_A_CODE_TASK",
+    "OUTPUT_FORMAT": "one-fenced-python-block,no-prose",
+    "ROUTE": "code_change",
+    "RUNTIME": "python3.12,stdlib-only",
+    "SCOPE": "implement-exactly-the-requested-function"
+  },
+  "schema_ver": "1.0"
+}

@@ -40,17 +40,22 @@ class OllamaRunner:
 class OllamaHTTPClient:
     """Live adapter over Ollama's local HTTP API. Not covered by tests."""
 
-    def __init__(self, host: str):
+    def __init__(self, host: str, timeout_s: float | None = 300.0, options: dict | None = None):
         self._host = host.rstrip("/")
+        self.timeout_s = timeout_s  # None keeps the old wait-forever behaviour
+        self.options = dict(options or {})  # e.g. {"temperature": 0, "seed": 7}; recorded in run manifests
 
     def generate(self, model: str, prompt: str) -> tuple[str, int, int]:
-        payload = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode("utf-8")
+        body = {"model": model, "prompt": prompt, "stream": False}
+        if self.options:
+            body["options"] = self.options
+        payload = json.dumps(body).encode("utf-8")
         request = urllib.request.Request(
             f"{self._host}/api/generate",
             data=payload,
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
             data = json.loads(response.read().decode("utf-8"))
         return data["response"], data.get("prompt_eval_count", 0), data.get("eval_count", 0)

@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "required": [
+    "DELIVERABLE",
+    "IF_NOT_A_CODE_CHANGE",
+    "OUTPUT_FORMAT",
+    "ROUTE",
+    "RUNTIME",
+    "SCOPE",
+    "SCHEMA_VER"
+  ],
+  "properties": {
+    "ROUTE": {
+      "type": "string"
+    },
+    "DELIVERABLE": {
+      "type": "string"
+    },
+    "OUTPUT_FORMAT": {
+      "type": "string"
+    },
+    "RUNTIME": {
+      "type": "string"
+    },
+    "SCOPE": {
+      "type": "string"
+    },
+    "IF_NOT_A_CODE_CHANGE": {
+      "type": "string"
+    },
+    "SCHEMA_VER": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    }
+  }
+}

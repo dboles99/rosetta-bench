@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "DELIVERABLE": "translation-issues",
+    "OUTPUT_FORMAT": "bullets:segment,issue,fix",
+    "ROUTE": "translation_review",
+    "SCOPE": "review-only,no-retranslation"
+  },
+  "schema_ver": "1.0"
+}

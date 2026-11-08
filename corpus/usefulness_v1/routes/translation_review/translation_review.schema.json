@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "required": [
+    "DELIVERABLE",
+    "OUTPUT_FORMAT",
+    "ROUTE",
+    "SCOPE",
+    "SCHEMA_VER"
+  ],
+  "properties": {
+    "ROUTE": {
+      "type": "string"
+    },
+    "DELIVERABLE": {
+      "type": "string"
+    },
+    "OUTPUT_FORMAT": {
+      "type": "string"
+    },
+    "SCOPE": {
+      "type": "string"
+    },
+    "SCHEMA_VER": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    }
+  }
+}

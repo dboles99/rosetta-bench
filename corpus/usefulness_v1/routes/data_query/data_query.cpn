@@ -1,0 +1,5 @@
+SCHEMA_VER=1.0
+DELIVERABLE=answer-with-figures
+OUTPUT_FORMAT=table,then-one-sentence-answer
+ROUTE=data_query
+SCOPE=read-only-results-data

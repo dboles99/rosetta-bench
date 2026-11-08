@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "DELIVERABLE": "clarifying-questions",
+    "OUTPUT_FORMAT": "at-most-three-questions",
+    "ROUTE": "clarify",
+    "SCOPE": "no-implementation"
+  },
+  "schema_ver": "1.0"
+}

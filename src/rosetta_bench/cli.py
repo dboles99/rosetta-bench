@@ -130,6 +130,80 @@ def _decision_command(args) -> int:
     return 0
 
 
+def _usefulness_command(args) -> int:
+    import os
+
+    if args.usefulness_command == "report":
+        from rosetta_bench.usefulness.report import write_usefulness_report
+
+        print(f"wrote {write_usefulness_report(Path(args.run))}")
+        return 0
+
+    from rosetta_bench.decision.fake_provider import FakeSystemOne
+    from rosetta_bench.decision.profiles import PROFILES
+    from rosetta_bench.decision.transport import BudgetTransport, FakeTransport, UrllibTransport
+    from rosetta_bench.usefulness import pipeline
+
+    def fail(message: str) -> int:
+        print(f"usefulness run not started: {message}", file=sys.stderr)
+        return 2
+
+    try:
+        arms = pipeline.arm_specs([a.strip() for a in args.arms.split(",") if a.strip()], args.postflight)
+    except ValueError as exc:
+        return fail(str(exc))
+    out = Path(args.out)
+    if (out / "manifest.json").exists():
+        return fail(f"a run already exists in {out}")
+
+    live_parts = []
+    if args.generator == "fake":
+        generator = pipeline.FakeCodeGenerator(Path(args.corpus))
+        meta = {"kind": "fake", "model": generator.model, "settings": {}}
+    else:
+        live_parts.append("generator")
+        if not args.live:
+            return fail(f"generator '{args.generator}' calls a model service; add --live to confirm")
+        if args.max_generator_calls is None:
+            return fail("live runs need an explicit --max-generator-calls budget")
+        from rosetta_bench.runners.ollama_runner import OllamaHTTPClient, OllamaRunner
+
+        settings = {"temperature": 0, "seed": args.seed}
+        generator = OllamaRunner(args.generator_model, OllamaHTTPClient(args.ollama_host, timeout_s=args.generator_timeout, options=settings))
+        meta = {"kind": "ollama", "model": args.generator_model, "host": args.ollama_host,
+                "timeout_s": args.generator_timeout, "settings": settings}
+    generator = pipeline.BudgetedGenerator(generator, args.max_generator_calls)
+
+    decision = None
+    if args.decision != "none":
+        profile = PROFILES.get(args.decision)
+        if profile is None:
+            return fail(f"unknown decision provider {args.decision!r}")
+        if profile.name == "fake":
+            transport, key = FakeTransport(FakeSystemOne()), None
+        else:
+            live_parts.append("decision")
+            if not args.live:
+                return fail(f"decision provider '{profile.name}' makes network calls; add --live to confirm")
+            key = os.environ.get(profile.api_key_env) if profile.api_key_env else None
+            if profile.api_key_env and not key:
+                return fail(f"{profile.api_key_env} is not set in this environment")
+            if args.max_decision_calls is None:
+                return fail("live runs need an explicit --max-decision-calls budget (retries count as calls)")
+            transport = UrllibTransport()
+        if args.max_decision_calls is not None:
+            transport = BudgetTransport(transport, args.max_decision_calls)
+        decision = (profile, transport, key)
+
+    try:
+        pipeline.run_usefulness(Path(args.corpus), arms, generator, meta, out, seed=args.seed,
+                                live=bool(live_parts), decision=decision)
+    except (ValueError, FileExistsError) as exc:
+        return fail(str(exc))
+    print(f"wrote {out}")
+    return 0
+
+
 def _corpus_command(args) -> int:
     from rosetta_bench import corpus_tools
 
@@ -178,6 +252,24 @@ def main(argv: list[str] | None = None) -> int:
     for name in ("replay", "report"):
         decision_subparsers.add_parser(name).add_argument("--run", required=True)
 
+    usefulness_parser = subparsers.add_parser("usefulness")
+    usefulness_subparsers = usefulness_parser.add_subparsers(dest="usefulness_command", required=True)
+    useful_run = usefulness_subparsers.add_parser("run")
+    useful_run.add_argument("--corpus", default="corpus/usefulness_v1")
+    useful_run.add_argument("--arms", default="A,B,C")
+    useful_run.add_argument("--generator", choices=("fake", "ollama"), default="fake")
+    useful_run.add_argument("--generator-model", default="kimi-k2.7-code:cloud")
+    useful_run.add_argument("--ollama-host", default="http://localhost:11434")
+    useful_run.add_argument("--generator-timeout", type=float, default=300.0)
+    useful_run.add_argument("--decision", default="none")
+    useful_run.add_argument("--postflight", action="store_true")
+    useful_run.add_argument("--live", action="store_true")
+    useful_run.add_argument("--max-generator-calls", type=int, default=None)
+    useful_run.add_argument("--max-decision-calls", type=int, default=None)
+    useful_run.add_argument("--seed", type=int, default=20261109)
+    useful_run.add_argument("--out", required=True)
+    usefulness_subparsers.add_parser("report").add_argument("--run", required=True)
+
     corpus_parser = subparsers.add_parser("corpus")
     corpus_subparsers = corpus_parser.add_subparsers(dest="corpus_command", required=True)
     split_parser = corpus_subparsers.add_parser("split")
@@ -216,6 +308,8 @@ def main(argv: list[str] | None = None) -> int:
         return _decision_command(args)
     if args.command == "corpus":
         return _corpus_command(args)
+    if args.command == "usefulness":
+        return _usefulness_command(args)
     if args.command == "export" and args.export_format == "xlsx":
         return _run_export_xlsx(Path(args.csv), Path(args.out))
     if args.command == "export" and args.export_format == "sheets":

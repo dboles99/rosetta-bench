@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "required": [
+    "DELIVERABLE",
+    "IF_NOT_DOCS",
+    "OUTPUT_FORMAT",
+    "ROUTE",
+    "SCOPE",
+    "SCHEMA_VER"
+  ],
+  "properties": {
+    "ROUTE": {
+      "type": "string"
+    },
+    "DELIVERABLE": {
+      "type": "string"
+    },
+    "OUTPUT_FORMAT": {
+      "type": "string"
+    },
+    "SCOPE": {
+      "type": "string"
+    },
+    "IF_NOT_DOCS": {
+      "type": "string"
+    },
+    "SCHEMA_VER": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    }
+  }
+}

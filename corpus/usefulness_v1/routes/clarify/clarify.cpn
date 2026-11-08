@@ -1,0 +1,5 @@
+SCHEMA_VER=1.0
+DELIVERABLE=clarifying-questions
+OUTPUT_FORMAT=at-most-three-questions
+ROUTE=clarify
+SCOPE=no-implementation

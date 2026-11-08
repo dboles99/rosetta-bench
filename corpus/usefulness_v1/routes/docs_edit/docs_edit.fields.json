@@ -1,0 +1,10 @@
+{
+  "fields": {
+    "DELIVERABLE": "revised-documentation-text",
+    "IF_NOT_DOCS": "reply NOT_A_DOCS_TASK",
+    "OUTPUT_FORMAT": "markdown-prose,no-code",
+    "ROUTE": "docs_edit",
+    "SCOPE": "documentation-only"
+  },
+  "schema_ver": "1.0"
+}

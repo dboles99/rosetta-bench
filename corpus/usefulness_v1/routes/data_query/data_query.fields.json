@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "DELIVERABLE": "answer-with-figures",
+    "OUTPUT_FORMAT": "table,then-one-sentence-answer",
+    "ROUTE": "data_query",
+    "SCOPE": "read-only-results-data"
+  },
+  "schema_ver": "1.0"
+}
