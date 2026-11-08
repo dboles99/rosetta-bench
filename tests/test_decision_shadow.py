@@ -125,6 +125,51 @@ def test_call_budget_stops_the_run_early(tmp_path: Path):
     assert len(_lines(out / "exchanges.jsonl")) == 3
 
 
+class _VersionedFake:
+    """Fake server that answers like FakeSystemOne but reports a versioned model."""
+
+    def __init__(self, served: str):
+        from rosetta_bench.decision.fake_provider import FakeSystemOne
+
+        self._inner = FakeSystemOne()
+        self._served = served
+
+    def __call__(self, request):
+        reply = self._inner(request)
+        body = json.loads(reply.body)
+        body["model"] = self._served
+        return HttpResponse(200, reply.headers, json.dumps(body).encode())
+
+
+def _versioned_run(tmp_path: Path, served: str, expected: str) -> list[dict]:
+    from dataclasses import replace
+
+    from rosetta_bench.decision.shadow import run_shadow
+
+    profile = replace(PROFILES["fake"], expected_served_model=expected)
+    out = run_shadow(CORPUS, profile, FakeTransport(_VersionedFake(served)), tmp_path / served, seed=3)
+    return _lines(out / "decisions.jsonl")
+
+
+def test_policy_is_pinned_to_the_expected_served_revision_not_the_requested_alias(tmp_path: Path):
+    decisions = _versioned_run(tmp_path, served="fake-1.14.0", expected="fake-1.14.0")
+    assert not any("CALIBRATION_STALE" in d["reason_codes"] for d in decisions)
+    receipts = _lines(tmp_path / "fake-1.14.0" / "receipts.jsonl")
+    called = [r for r in receipts if r["provider"]["served_model"]]
+    assert called and all(r["provider"]["revision_known"] for r in called)
+
+
+def test_a_different_served_revision_falls_back_on_every_called_case(tmp_path: Path):
+    decisions = _versioned_run(tmp_path, served="fake-1.15.0", expected="fake-1.14.0")
+    called = [d for d in decisions if d["served_model"]]
+    assert called and all(d["outcome"] == "FALLBACK" and d["reason_codes"] == ["CALIBRATION_STALE"] for d in called)
+
+
+def test_jevmodel_profile_expects_the_revision_seen_by_the_probe():
+    assert PROFILES["jevmodel"].default_model == "jev-latest"
+    assert PROFILES["jevmodel"].expected_served_model == "jev-1.14.0"
+
+
 def test_probe_records_capabilities_without_the_key(tmp_path: Path):
     key = "probe-key-" + "z" * 20
     reply = {

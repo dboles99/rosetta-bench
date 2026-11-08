@@ -16,6 +16,9 @@ class ProviderProfile:
     pins_versions: bool
     supports_idempotency_key: bool
     notes: str
+    # The served revision a policy is pinned to. Requests may use an alias; a reply
+    # reporting any other model makes the policy fall back (CALIBRATION_STALE).
+    expected_served_model: str | None = None
 
 
 PROFILES: dict[str, ProviderProfile] = {
@@ -33,8 +36,10 @@ PROFILES: dict[str, ProviderProfile] = {
         notes=(
             "jevmodel.org/docs read 2026-11-09: unaffiliated reseller of TypeSafe's Jev; 1-8 questions, "
             "choice 2-20 options, score returns score+confidence only, only jev-latest/jev-preview, "
-            "120 requests/min per key, no Retry-After documented."
+            "120 requests/min per key, no Retry-After documented. Live probe 2026-11-09: a jev-latest request "
+            "was served and reported as jev-1.14.0."
         ),
+        expected_served_model="jev-1.14.0",
     ),
     "clef-ollama": ProviderProfile(
         name="clef-ollama",
@@ -64,5 +69,6 @@ PROFILES: dict[str, ProviderProfile] = {
         pins_versions=True,
         supports_idempotency_key=False,
         notes="Offline synthetic keyword-overlap provider. Not a model.",
+        expected_served_model="fake-systemone-1",
     ),
 }

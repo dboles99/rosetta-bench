@@ -11,6 +11,7 @@ import hashlib
 import json
 import platform
 import random
+import re
 import sys
 import uuid
 from dataclasses import asdict, dataclass
@@ -54,6 +55,7 @@ from .systemone import SystemOneAdapter
 from .transport import BudgetExceeded, ReplayTransport, Transport
 
 APPROVED_DATA_CLASSES = ("synthetic",)
+_VERSIONED = re.compile(r"\d+\.\d+\.\d+")
 EVIDENCE_MAX_AGE = timedelta(days=1)
 PLACEHOLDER_THRESHOLDS = {"fit_yes": 0.7, "fit_no": 0.3, "route_default": 0.6}
 
@@ -96,12 +98,12 @@ def load_routing_corpus(corpus_dir: Path) -> tuple[list[dict], list[RoutingCase]
     return routes, cases, digest
 
 
-def placeholder_policy(profile: ProviderProfile, model: str, qset) -> Policy:
+def placeholder_policy(profile: ProviderProfile, served_model: str, qset) -> Policy:
     return Policy(
         policy_id="intake-placeholder",
         version="0.1",
         provider=profile.name,
-        served_model=model,
+        served_model=served_model,
         qset_id=qset.set_id,
         qset_hash=qset.content_hash(),
         thresholds=IntakeThresholds(
@@ -160,8 +162,9 @@ def run_shadow(
 ) -> Path:
     routes, cases, corpus_digest = load_routing_corpus(corpus_dir)
     model = model or profile.default_model
+    expected_served = profile.expected_served_model or model
     qset = intake_battery(routes)
-    policy = placeholder_policy(profile, model, qset)
+    policy = placeholder_policy(profile, expected_served, qset)
     route_refs = {r["id"]: RouteRef(r["id"], r["description"], _sha(canonical_json(r))) for r in routes}
     now = datetime.fromisoformat(state_time) if state_time else datetime.now(timezone.utc).replace(microsecond=0)
     order = [case.case_id for case in cases]
@@ -177,7 +180,8 @@ def run_shadow(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "corpus_dir": str(Path(corpus_dir).resolve()),
         "corpus_digest": corpus_digest,
-        "provider": {"profile": profile.name, "endpoint": profile.endpoint, "requested_model": model, "notes": profile.notes},
+        "provider": {"profile": profile.name, "endpoint": profile.endpoint, "requested_model": model,
+                     "expected_served_model": expected_served, "notes": profile.notes},
         "synthetic": profile.name == "fake",
         "live": live,
         "seed": seed,
@@ -251,7 +255,8 @@ def run_shadow(
             "question_set": {"set_id": qset.set_id, "version": qset.version, "hash": qset.content_hash()},
             "policy": {"policy_id": policy.policy_id, "version": policy.version, "calibrated": policy.calibrated},
             "provider": {"name": profile.name, "requested_model": model, "served_model": served,
-                         "revision_known": bool(profile.pins_versions and served == model)},
+                         "revision_known": bool(served and served == expected_served
+                                                and (profile.pins_versions or _VERSIONED.search(served)))},
             "answers_ref": f"decisions.jsonl#{case.case_id}",
             "recommendation": {"outcome": recommendation.outcome.value, "route": recommendation.route,
                                "reason_codes": list(recommendation.reason_codes)},
@@ -300,7 +305,10 @@ def replay_run(run_dir: Path, profiles: dict | None = None) -> ReplayReport:
     _, _, digest = load_routing_corpus(corpus_dir)
     if digest != manifest["corpus_digest"]:
         raise ValueError("corpus changed since the run; replay would not be like for like")
+    from dataclasses import replace
+
     profile = (profiles or PROFILES)[manifest["provider"]["profile"]]
+    profile = replace(profile, expected_served_model=manifest["provider"].get("expected_served_model"))
     original = {d["case_id"]: d for d in _lines(run_dir / "decisions.jsonl")}
     exchanges = _lines(run_dir / "exchanges.jsonl")
 
