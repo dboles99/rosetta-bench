@@ -72,6 +72,14 @@ class RoutingCase:
     label_fits: bool
     label_route: str | None
     label_source: str
+    family: str = ""
+
+
+class MissingLabels(FileNotFoundError):
+    pass
+
+
+DEFAULT_BASELINE_ROUTE = "code_change"
 
 
 def _sha(text: str) -> str:
@@ -79,22 +87,34 @@ def _sha(text: str) -> str:
 
 
 def load_routing_corpus(corpus_dir: Path) -> tuple[list[dict], list[RoutingCase], str]:
+    """Cases carry labels inline (smoke corpus) or take gold labels from labels.jsonl.
+    An unlabelled corpus cannot be scored, so loading it raises MissingLabels."""
     corpus_dir = Path(corpus_dir)
     routes_text = (corpus_dir / "routes.json").read_text(encoding="utf-8")
     cases_text = (corpus_dir / "cases.jsonl").read_text(encoding="utf-8")
     routes = json.loads(routes_text)["routes"]
+    route_ids = [route["id"] for route in routes]
+    raws = [json.loads(line) for line in cases_text.splitlines() if line.strip()]
+    labels_text = ""
+    labels: dict[str, dict] = {}
+    if any("label_fits" not in raw for raw in raws):
+        labels_path = corpus_dir / "labels.jsonl"
+        if not labels_path.exists():
+            raise MissingLabels(f"{corpus_dir} has no gold labels yet (labels.jsonl); import them first")
+        labels_text = labels_path.read_text(encoding="utf-8")
+        labels = {item["case_id"]: item for item in (json.loads(l) for l in labels_text.splitlines() if l.strip())}
     cases = []
-    for line in cases_text.splitlines():
-        if not line.strip():
-            continue
-        raw = json.loads(line)
+    for raw in raws:
+        label = raw if "label_fits" in raw else labels[raw["case_id"]]
         cases.append(RoutingCase(
-            case_id=raw["case_id"], category=raw["category"], language=raw["language"],
-            data_class=raw["data_class"], request_text=raw["request_text"],
-            eligible_routes=tuple(raw["eligible_routes"]), baseline_route=raw["baseline_route"],
-            label_fits=raw["label_fits"], label_route=raw["label_route"], label_source=raw["label_source"],
+            case_id=raw["case_id"], category=raw.get("category", raw.get("family_kind", "unknown")),
+            language=raw["language"], data_class=raw.get("data_class", "synthetic"), request_text=raw["request_text"],
+            eligible_routes=tuple(raw.get("eligible_routes", route_ids)),
+            baseline_route=raw.get("baseline_route", DEFAULT_BASELINE_ROUTE),
+            label_fits=label["label_fits"], label_route=label["label_route"], label_source=label["label_source"],
+            family=raw.get("family", raw["case_id"]),
         ))
-    digest = _sha(canonical_json({"routes": json.loads(routes_text), "cases": [json.loads(l) for l in cases_text.splitlines() if l.strip()]}))
+    digest = _sha(canonical_json({"routes": json.loads(routes_text), "cases": raws, "labels": labels_text}))
     return routes, cases, digest
 
 
@@ -159,8 +179,16 @@ def run_shadow(
     state_time: str | None = None,
     model: str | None = None,
     max_transport_retries: int = 2,
+    split: str | None = None,
 ) -> Path:
     routes, cases, corpus_digest = load_routing_corpus(corpus_dir)
+    splits_hash = None
+    if split is not None:
+        splits = json.loads((Path(corpus_dir) / "splits.json").read_text(encoding="utf-8"))
+        splits_hash = splits["hash"]
+        cases = [case for case in cases if splits["families"].get(case.family) == split]
+        if not cases:
+            raise ValueError(f"no cases in split {split!r}")
     model = model or profile.default_model
     expected_served = profile.expected_served_model or model
     qset = intake_battery(routes)
@@ -180,6 +208,8 @@ def run_shadow(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "corpus_dir": str(Path(corpus_dir).resolve()),
         "corpus_digest": corpus_digest,
+        "split": split,
+        "splits_hash": splits_hash,
         "provider": {"profile": profile.name, "endpoint": profile.endpoint, "requested_model": model,
                      "expected_served_model": expected_served, "notes": profile.notes},
         "synthetic": profile.name == "fake",
@@ -319,7 +349,7 @@ def replay_run(run_dir: Path, profiles: dict | None = None) -> ReplayReport:
             corpus_dir, profile, ReplayTransport(exchanges), Path(tmp) / "replay",
             seed=manifest["seed"], api_key=f"no-key-{uuid.uuid4().hex}" if profile.api_key_env else None,
             state_time=manifest["state_time"], model=manifest["provider"]["requested_model"],
-            max_transport_retries=manifest["max_transport_retries"],
+            max_transport_retries=manifest["max_transport_retries"], split=manifest.get("split"),
         )
         replayed = {d["case_id"]: d for d in _lines(replayed_dir / "decisions.jsonl")}
     keys = ("outcome", "route", "reason_codes", "signals")

@@ -124,8 +124,29 @@ def _decision_command(args) -> int:
 
     from rosetta_bench.decision.shadow import run_shadow
 
-    run_shadow(Path(args.corpus), profile, transport, out, seed=args.seed, api_key=key, live=profile.name != "fake")
+    run_shadow(Path(args.corpus), profile, transport, out, seed=args.seed, api_key=key,
+               live=profile.name != "fake", split=args.split)
     print(f"wrote {out}")
+    return 0
+
+
+def _corpus_command(args) -> int:
+    from rosetta_bench import corpus_tools
+
+    corpus = Path(args.corpus)
+    try:
+        if args.corpus_command == "split":
+            data = corpus_tools.write_splits(corpus, seed=args.seed, calibration_fraction=args.fraction)
+            counts = {side: sum(1 for v in data["families"].values() if v == side) for side in ("calibration", "held_out")}
+            print(f"wrote {corpus / 'splits.json'}: families {counts}; hash {data['hash'][:12]}")
+        elif args.corpus_command == "sheet":
+            print(f"wrote {corpus_tools.export_labelling_sheet(corpus, Path(args.out), seed=args.seed)}")
+        else:
+            summary = corpus_tools.import_labels(corpus, Path(args.sheet), labeller=args.labeller)
+            print(json.dumps({k: v for k, v in summary.items() if k != "disagreements"}, indent=2))
+    except (FileExistsError, corpus_tools.LabelImportError) as exc:
+        print(f"not done: {exc}", file=sys.stderr)
+        return 2
     return 0
 
 
@@ -153,8 +174,24 @@ def main(argv: list[str] | None = None) -> int:
         sub.add_argument("--live", action="store_true", help="confirm that this run may call a network provider")
         sub.add_argument("--max-calls", type=int, default=None)
         sub.add_argument("--seed", type=int, default=20261109)
+        sub.add_argument("--split", choices=("calibration", "held_out"), default=None)
     for name in ("replay", "report"):
         decision_subparsers.add_parser(name).add_argument("--run", required=True)
+
+    corpus_parser = subparsers.add_parser("corpus")
+    corpus_subparsers = corpus_parser.add_subparsers(dest="corpus_command", required=True)
+    split_parser = corpus_subparsers.add_parser("split")
+    split_parser.add_argument("--corpus", required=True)
+    split_parser.add_argument("--seed", type=int, required=True)
+    split_parser.add_argument("--fraction", type=float, default=0.4)
+    sheet_parser = corpus_subparsers.add_parser("sheet")
+    sheet_parser.add_argument("--corpus", required=True)
+    sheet_parser.add_argument("--out", required=True)
+    sheet_parser.add_argument("--seed", type=int, required=True)
+    import_parser = corpus_subparsers.add_parser("import-labels")
+    import_parser.add_argument("--corpus", required=True)
+    import_parser.add_argument("--sheet", required=True)
+    import_parser.add_argument("--labeller", required=True)
 
     export_parser = subparsers.add_parser("export")
     export_subparsers = export_parser.add_subparsers(dest="export_format", required=True)
@@ -177,6 +214,8 @@ def main(argv: list[str] | None = None) -> int:
         return _report_experiment(Path(args.run))
     if args.command == "decision":
         return _decision_command(args)
+    if args.command == "corpus":
+        return _corpus_command(args)
     if args.command == "export" and args.export_format == "xlsx":
         return _run_export_xlsx(Path(args.csv), Path(args.out))
     if args.command == "export" and args.export_format == "sheets":
