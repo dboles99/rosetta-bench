@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "note": "Route catalogue for the intake smoke corpus. Every case is judged against all routes; per-case eligibility is a deterministic gate.",
+  "routes": [
+    {"id": "code_change", "description": "Change source code in the repository: add or fix a function, flag, parser, test, bug or command."},
+    {"id": "docs_edit", "description": "Edit documentation only: README, design notes, docstrings, wording, typos or prose examples. No code changes."},
+    {"id": "translation_review", "description": "Review an existing translation between Chinese, Japanese and English for omissions, meaning changes or terminology errors."},
+    {"id": "data_query", "description": "Answer a question from benchmark results data: compute a statistic, filter trials, compare runs or arms."},
+    {"id": "clarify", "description": "The request concerns this project but is too vague to act on; ask the requester for the missing details."}
+  ]
+}

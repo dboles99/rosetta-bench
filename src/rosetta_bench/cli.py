@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -62,6 +63,72 @@ def _report_experiment(run_dir: Path) -> int:
     return 0
 
 
+def _decision_transport(args, profile):
+    """Returns (transport, api_key) or an error message. Live providers need --live,
+    their key in the named environment variable, and an explicit --max-calls budget."""
+    import os
+
+    from rosetta_bench.decision.fake_provider import FakeSystemOne
+    from rosetta_bench.decision.transport import BudgetTransport, FakeTransport, UrllibTransport
+
+    if profile.name == "fake":
+        transport, key = FakeTransport(FakeSystemOne()), None
+    else:
+        if not args.live:
+            return None, None, f"provider '{profile.name}' makes network calls to {profile.endpoint}; add --live to confirm"
+        key = os.environ.get(profile.api_key_env) if profile.api_key_env else None
+        if profile.api_key_env and not key:
+            return None, None, f"{profile.api_key_env} is not set in this environment; set it, then rerun"
+        if args.max_calls is None:
+            return None, None, "live runs need an explicit --max-calls budget (retries count as calls)"
+        transport = UrllibTransport()
+    if args.max_calls is not None:
+        transport = BudgetTransport(transport, args.max_calls)
+    return transport, key, None
+
+
+def _decision_command(args) -> int:
+    from rosetta_bench.decision.profiles import PROFILES
+
+    if args.decision_command == "replay":
+        from rosetta_bench.decision.shadow import replay_run
+
+        report = replay_run(Path(args.run))
+        print(f"replayed {report.cases} cases; mismatches: {len(report.mismatches)} {report.mismatches or ''}".rstrip())
+        return 0 if not report.mismatches else 1
+    if args.decision_command == "report":
+        from rosetta_bench.decision.report import write_decision_report
+
+        print(f"wrote {write_decision_report(Path(args.run))}")
+        return 0
+
+    profile = PROFILES.get(args.provider)
+    if profile is None:
+        print(f"unknown provider {args.provider!r}; choose from {sorted(PROFILES)}", file=sys.stderr)
+        return 2
+    out = Path(args.out)
+    if (out / "manifest.json").exists() or (out / "probe.json").exists():
+        print(f"{out} already holds results; choose a new --out directory", file=sys.stderr)
+        return 2
+    transport, key, error = _decision_transport(args, profile)
+    if error:
+        print(error, file=sys.stderr)
+        return 2
+
+    if args.decision_command == "probe":
+        from rosetta_bench.decision.probe import run_probe
+
+        probe = run_probe(profile, transport, key, Path(args.corpus), out)
+        print(json.dumps({k: probe[k] for k in ("served_model", "http_status", "calls", "input_tokens", "tokens_remaining", "fields", "error")}, indent=2))
+        return 0 if probe["error"] is None else 1
+
+    from rosetta_bench.decision.shadow import run_shadow
+
+    run_shadow(Path(args.corpus), profile, transport, out, seed=args.seed, api_key=key, live=profile.name != "fake")
+    print(f"wrote {out}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="bench")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -75,6 +142,19 @@ def main(argv: list[str] | None = None) -> int:
     experiment_run.add_argument("--out", required=True)
     experiment_report = experiment_subparsers.add_parser("report")
     experiment_report.add_argument("--run", required=True)
+
+    decision_parser = subparsers.add_parser("decision")
+    decision_subparsers = decision_parser.add_subparsers(dest="decision_command", required=True)
+    for name in ("run", "probe"):
+        sub = decision_subparsers.add_parser(name)
+        sub.add_argument("--corpus", default="corpus/routing_smoke")
+        sub.add_argument("--provider", required=True)
+        sub.add_argument("--out", required=True)
+        sub.add_argument("--live", action="store_true", help="confirm that this run may call a network provider")
+        sub.add_argument("--max-calls", type=int, default=None)
+        sub.add_argument("--seed", type=int, default=20261109)
+    for name in ("replay", "report"):
+        decision_subparsers.add_parser(name).add_argument("--run", required=True)
 
     export_parser = subparsers.add_parser("export")
     export_subparsers = export_parser.add_subparsers(dest="export_format", required=True)
@@ -95,6 +175,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_experiment(Path(args.config), Path(args.out))
     if args.command == "experiment" and args.experiment_command == "report":
         return _report_experiment(Path(args.run))
+    if args.command == "decision":
+        return _decision_command(args)
     if args.command == "export" and args.export_format == "xlsx":
         return _run_export_xlsx(Path(args.csv), Path(args.out))
     if args.command == "export" and args.export_format == "sheets":

@@ -13,6 +13,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+# `bench decision ...` needs rosetta-core with the rosetta_core.decision package
+# (branch exp/decision-layer). Until that is published, install it from a local
+# checkout: pip install -e <path-to-rosetta>
+decision = ["rosetta-core>=0.1.0"]
 
 [project.scripts]
 bench = "rosetta_bench.cli:main"
