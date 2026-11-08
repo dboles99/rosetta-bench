@@ -170,6 +170,15 @@ def test_jevmodel_profile_expects_the_revision_seen_by_the_probe():
     assert PROFILES["jevmodel"].expected_served_model == "jev-1.14.0"
 
 
+def test_clef_profile_expects_its_unversioned_served_name(tmp_path: Path):
+    assert PROFILES["clef-ollama"].expected_served_model == "clef"
+    decisions = _versioned_run(tmp_path, served="clef", expected="clef")
+    assert not any("CALIBRATION_STALE" in d["reason_codes"] for d in decisions)
+    receipts = _lines(tmp_path / "clef" / "receipts.jsonl")
+    called = [r for r in receipts if r["provider"]["served_model"]]
+    assert called and not any(r["provider"]["revision_known"] for r in called)
+
+
 def test_probe_records_capabilities_without_the_key(tmp_path: Path):
     key = "probe-key-" + "z" * 20
     reply = {

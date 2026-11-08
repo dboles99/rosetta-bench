@@ -54,8 +54,11 @@ PROFILES: dict[str, ProviderProfile] = {
         supports_idempotency_key=False,
         notes=(
             "Local Ollama forwarding to Ollama Cloud (verified working 2026-11-05 per local skill notes); "
-            "clef docs: up to 64 questions; choice 2-26 options locally. Served revision not pinnable here."
+            "clef docs: up to 64 questions; choice 2-26 options locally. Live probe 2026-11-09: a clef:cloud "
+            "request is reported as model 'clef' with no version, so revision drift is NOT detectable on this "
+            "route; noul criteria keyed yes/no are rejected with HTTP 400."
         ),
+        expected_served_model="clef",
     ),
     "fake": ProviderProfile(
         name="fake",
