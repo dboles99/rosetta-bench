@@ -13,6 +13,7 @@ import platform
 import random
 import re
 import sys
+import time
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
@@ -42,6 +43,7 @@ from rosetta_core.decision import (
     validate_receipt,
     wire_state,
 )
+from rosetta_core.decision.cache import CacheScope, answers_from_entry, decision_cache_key, entry_usable, make_entry
 from rosetta_core.decision.contracts import canonical_json
 
 import rosetta_bench
@@ -50,8 +52,9 @@ from rosetta_bench.provenance import git_state
 
 from .battery import intake_battery
 from .masking import Masker
+from .cache_store import DecisionCache
 from .profiles import ProviderProfile
-from .systemone import SystemOneAdapter
+from .systemone import AskResult, SystemOneAdapter
 from .transport import BudgetExceeded, ReplayTransport, Transport
 
 APPROVED_DATA_CLASSES = ("synthetic",)
@@ -180,6 +183,9 @@ def run_shadow(
     model: str | None = None,
     max_transport_retries: int = 2,
     split: str | None = None,
+    cache_path: Path | None = None,
+    cache_ttl: timedelta | None = None,
+    cache_checked_at: str | None = None,
 ) -> Path:
     routes, cases, corpus_digest = load_routing_corpus(corpus_dir)
     splits_hash = None
@@ -224,12 +230,23 @@ def run_shadow(
         "environment": {"python": sys.version.split()[0], "platform": platform.platform()},
         "stopped_early": None,
     }
+    store = scope = None
+    checked_at = None
+    if cache_path is not None:
+        store = DecisionCache(cache_path)
+        ttl = cache_ttl or (timedelta(days=7) if _VERSIONED.search(expected_served) else timedelta(hours=24))
+        scope = CacheScope(profile.name, expected_served, policy.policy_id, policy.version, ttl)
+        checked_at = datetime.fromisoformat(cache_checked_at) if cache_checked_at else datetime.now(timezone.utc)
+        manifest["cache"] = {"path": str(Path(cache_path).resolve()), "ttl_s": ttl.total_seconds(),
+                             "checked_at": checked_at.isoformat(), "hits": 0, "misses": 0, "tokens_avoided": 0}
     writer.write_json("manifest.json", manifest)
 
     adapter = SystemOneAdapter(profile, transport, model=model, api_key=api_key, max_transport_retries=max_transport_retries)
     forbidden_extra = (api_key,) if api_key else ()
     for case_id in order:
         case = by_id[case_id]
+        receipt_id = new_receipt_id()
+        cache_info = {"status": "off", "key": None, "source_receipt_id": None}
         masker = Masker()
         gates = _gates(case)
         evidence = (Evidence("request.text", masker.mask_value(case.request_text), f"corpus:{case.case_id}", now.isoformat()),)
@@ -246,14 +263,37 @@ def run_shadow(
 
         ask = None
         if not gates.deny_reasons and not gates.missing_evidence and state is not None:
-            try:
-                ask = adapter.ask(wire_state(state), qset, context={"case_id": case.case_id})
-            except BudgetExceeded as exc:
-                manifest["stopped_early"] = str(exc)
-                break
-            for exchange in ask.exchanges:
-                assert_no_secrets(exchange, forbidden=masker.originals + forbidden_extra)
-                writer.append("exchanges.jsonl", exchange)
+            entry = None
+            if store is not None:
+                key = decision_cache_key(state, qset, scope)
+                started = time.perf_counter()
+                entry = store.get(key)
+                usable = entry is not None and entry_usable(entry, key, checked_at, scope)[0]
+                if usable:
+                    ask = AskResult(result=answers_from_entry(entry), elapsed_ms=(time.perf_counter() - started) * 1000, input_tokens=0)
+                    cache_info = {"status": "hit", "key": key, "source_receipt_id": entry["source_receipt_id"]}
+                    store.record_hit(key)
+                    manifest["cache"]["hits"] += 1
+                    manifest["cache"]["tokens_avoided"] += entry.get("original_input_tokens") or 0
+                    writer.append("cache_entries.jsonl", entry)
+                else:
+                    cache_info = {"status": "miss", "key": key, "source_receipt_id": None}
+                    manifest["cache"]["misses"] += 1
+            if ask is None:
+                try:
+                    ask = adapter.ask(wire_state(state), qset, context={"case_id": case.case_id})
+                except BudgetExceeded as exc:
+                    manifest["stopped_early"] = str(exc)
+                    break
+                for exchange in ask.exchanges:
+                    assert_no_secrets(exchange, forbidden=masker.originals + forbidden_extra)
+                    writer.append("exchanges.jsonl", exchange)
+                if store is not None and isinstance(ask.result, AnswerBatch):
+                    try:
+                        store.put(make_entry(state, qset, scope, ask.result, now=checked_at,
+                                             evidence_expires_at=now + EVIDENCE_MAX_AGE, source_receipt_id=receipt_id))
+                    except ValueError:
+                        pass  # wrong served model or invalid answers: never cached
         result = ask.result if ask else None
         recommendation = reduce(gates, result, policy, qset)
         violations = [asdict(v) for v in validate_batch(result, qset)] if isinstance(result, AnswerBatch) else []
@@ -271,7 +311,7 @@ def run_shadow(
         }
         served = result.served_model if isinstance(result, AnswerBatch) else None
         receipt = {
-            "receipt_version": RECEIPT_VERSION, "receipt_id": new_receipt_id(), "run_id": run_id,
+            "receipt_version": RECEIPT_VERSION, "receipt_id": receipt_id, "run_id": run_id,
             "trial_id": f"{run_id}:{case.case_id}", "case_id": case.case_id,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "repos": {name: (state_ or {}).get("sha") for name, state_ in repos.items()},
@@ -305,11 +345,17 @@ def run_shadow(
             }},
             "override": None,
         }
+        if store is not None:
+            receipt["cache"] = cache_info
+            decision["cache"] = cache_info["status"]
         validate_receipt(receipt)
         assert_no_secrets(receipt, forbidden=masker.originals + forbidden_extra)
         assert_no_secrets(decision, forbidden=masker.originals + forbidden_extra)
         writer.append("decisions.jsonl", decision)
         writer.append("receipts.jsonl", receipt)
+    if store is not None:
+        manifest["cache"]["entries_after"] = store.stats()["entries"]
+        store.close()
     writer.write_json("manifest.json", manifest)
     return writer.out
 
@@ -345,11 +391,21 @@ def replay_run(run_dir: Path, profiles: dict | None = None) -> ReplayReport:
     import tempfile
 
     with tempfile.TemporaryDirectory(prefix="rosetta-replay-") as tmp:
+        cache_kwargs = {}
+        if manifest.get("cache"):
+            # Replay never touches the live cache: it rebuilds one from the entries this run used.
+            snapshot = DecisionCache(Path(tmp) / "snapshot.sqlite")
+            for entry in _lines(run_dir / "cache_entries.jsonl"):
+                snapshot.put(entry)
+            snapshot.close()
+            cache_kwargs = {"cache_path": Path(tmp) / "snapshot.sqlite",
+                            "cache_ttl": timedelta(seconds=manifest["cache"]["ttl_s"]),
+                            "cache_checked_at": manifest["cache"]["checked_at"]}
         replayed_dir = run_shadow(
             corpus_dir, profile, ReplayTransport(exchanges), Path(tmp) / "replay",
             seed=manifest["seed"], api_key=f"no-key-{uuid.uuid4().hex}" if profile.api_key_env else None,
             state_time=manifest["state_time"], model=manifest["provider"]["requested_model"],
-            max_transport_retries=manifest["max_transport_retries"], split=manifest.get("split"),
+            max_transport_retries=manifest["max_transport_retries"], split=manifest.get("split"), **cache_kwargs,
         )
         replayed = {d["case_id"]: d for d in _lines(replayed_dir / "decisions.jsonl")}
     keys = ("outcome", "route", "reason_codes", "signals")

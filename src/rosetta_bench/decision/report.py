@@ -37,6 +37,9 @@ def build_decision_report(run_dir: Path) -> str:
         f"{manifest['policy']['calibrated']}, thresholds {manifest['policy']['thresholds']}",
         f"- Question set hash: `{manifest['question_set']['hash'][:16]}…`",
         f"- Cases: {len(decisions)}; stopped early: {manifest.get('stopped_early') or 'no'}",
+        (f"- Cache: {manifest['cache']['hits']} hits, {manifest['cache']['misses']} misses; "
+         f"about {manifest['cache']['tokens_avoided']:,} decision input tokens avoided"
+         if manifest.get("cache") else "- Cache: off"),
         "- Labels: authored for wiring, not independently reviewed. Smoke cases establish wiring, not performance.",
         "",
         "## Outcomes",
