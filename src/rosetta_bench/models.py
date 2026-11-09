@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -15,6 +15,7 @@ class RunResult:
     tokens_out: int
     latency_ms: float
     turns: int = 1
+    meta: dict = field(default_factory=dict)  # provider-specific extras, e.g. reasoning size and prompt-cache hits
 
 
 @dataclass

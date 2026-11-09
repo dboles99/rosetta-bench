@@ -34,21 +34,26 @@ class OllamaRunner:
             tokens_out=tokens_out,
             latency_ms=latency_ms,
             turns=1,
+            meta=dict(getattr(self.client, "last_meta", None) or {}),
         )
 
 
 class OllamaHTTPClient:
     """Live adapter over Ollama's local HTTP API. Not covered by tests."""
 
-    def __init__(self, host: str, timeout_s: float | None = 300.0, options: dict | None = None):
+    def __init__(self, host: str, timeout_s: float | None = 300.0, options: dict | None = None, think: bool | None = None):
         self._host = host.rstrip("/")
         self.timeout_s = timeout_s  # None keeps the old wait-forever behaviour
         self.options = dict(options or {})  # e.g. {"temperature": 0, "seed": 7}; recorded in run manifests
+        self.think = think  # None: model default; False: no reasoning; True: reasoning on
+        self.last_meta: dict = {}
 
     def generate(self, model: str, prompt: str) -> tuple[str, int, int]:
         body = {"model": model, "prompt": prompt, "stream": False}
         if self.options:
             body["options"] = self.options
+        if self.think is not None:
+            body["think"] = self.think
         payload = json.dumps(body).encode("utf-8")
         request = urllib.request.Request(
             f"{self._host}/api/generate",
@@ -58,4 +63,17 @@ class OllamaHTTPClient:
         )
         with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
             data = json.loads(response.read().decode("utf-8"))
-        return data["response"], data.get("prompt_eval_count", 0), data.get("eval_count", 0)
+        # Ollama returns hidden reasoning in "thinking" and counts it inside eval_count; it does not
+        # report reasoning tokens separately, so they are estimated from the character split.
+        reasoning_chars = len(data.get("thinking") or "")
+        response_chars = len(data.get("response") or "")
+        eval_count = data.get("eval_count", 0) or 0
+        visible = reasoning_chars + response_chars
+        self.last_meta = {
+            "think": self.think,
+            "reasoning_chars": reasoning_chars,
+            "response_chars": response_chars,
+            "prompt_cached_tokens": data.get("prompt_eval_cached_count"),
+            "estimated_reasoning_tokens": int(round(eval_count * reasoning_chars / visible)) if visible else 0,
+        }
+        return data["response"], data.get("prompt_eval_count", 0), eval_count
