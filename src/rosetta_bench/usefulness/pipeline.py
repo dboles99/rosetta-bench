@@ -11,7 +11,11 @@ Phase 2 - arms: route from the decider (none -> baseline). NO_FIT/DENY decline w
   sandbox run; every arm is charged the original call's tokens and time.
 Phase 3 - advisory postflight on generated code for the requested representations.
 
-Success: code tasks pass their hidden tests in the sandbox; no-code tasks produce no code.
+Success is decided per task kind by the verifier registry in verify.py: code tasks pass their
+hidden tests in the sandbox; no-code tasks produce no code; v2 kinds (docs_edit, translation_review,
+data_query, clarify, unsolvable, false_premise) have their own deterministic checks. The route used
+without a decision layer (and on fallback) is the corpus's baseline route (corpus.json; default
+code_change).
 """
 from __future__ import annotations
 
@@ -57,8 +61,9 @@ from rosetta_bench.models import RunResult, Task
 from rosetta_bench.pricing import estimate_cost_v2
 from rosetta_bench.provenance import git_state
 
-from .corpus import REPRESENTATIONS, UsefulnessTask, corpus_digest, hidden_tests, load_tasks, route_contract, route_ids
+from .corpus import REPRESENTATIONS, UsefulnessTask, corpus_config, corpus_digest, load_tasks, route_contract, route_ids
 from .extract import extract_code, says_not_applicable
+from .verify import VerifyContext, verify
 
 BASELINE_ROUTE = "code_change"
 SANDBOX_FACTORY = None  # tests replace this with a fake; None means the real Docker sandbox
@@ -108,21 +113,34 @@ class BudgetedGenerator:
 
 
 class FakeCodeGenerator:
-    """SYNTHETIC offline coder: reference solutions under the code_change contract (broken
+    """SYNTHETIC offline coder: reference solutions under a code-capable contract (broken
     for some tasks), prose under other contracts, NOT_A_CODE_TASK for no-code requests
-    (but code for one of them). Not a model."""
+    (but code for one of them). For the other kinds it replays the corpus's reference reply
+    (reference/<id>.md); `refuses` answers UNSOLVABLE instead and `cheats` returns an
+    always-equal object (a gamed "Kirk" solution). Not a model."""
 
     name = "FAKE"
     model = "fake-coder-1"
 
-    def __init__(self, corpus_dir: Path, broken=("u04",), codes_anyway=("u14",)):
+    def __init__(self, corpus_dir: Path, broken=("u04",), codes_anyway=("u14",), refuses=(), cheats=()):
         self.corpus_dir = Path(corpus_dir)
         self.tasks = {t.task_id: t for t in load_tasks(corpus_dir)}
         self.broken, self.codes_anyway = set(broken), set(codes_anyway)
+        self.refuses, self.cheats = set(refuses), set(cheats)
 
     def run(self, prompt_text: str, task: Task | None) -> RunResult:
         item = self.tasks[task.name]
-        if "code_change" not in prompt_text and "NOT_A_CODE_TASK" not in prompt_text:
+        reference = self.corpus_dir / "reference" / f"{item.task_id}.md"
+        code_capable = "code_change" in prompt_text or "NOT_A_CODE_TASK" in prompt_text or "python" in prompt_text.lower()
+        if item.task_id in self.refuses:
+            output = "UNSOLVABLE: these requirements cannot all be met together."
+        elif item.task_id in self.cheats:
+            output = (f"```python\nclass _Always:\n    def __eq__(self, other):\n        return True\n\n"
+                      f"    def __getitem__(self, key):\n        return self\n\n\ndef {item.entry_point}(*args, **kwargs):\n"
+                      f"    return _Always()\n```")
+        elif item.kind not in ("code", "no_code") and reference.exists():
+            output = reference.read_text(encoding="utf-8")
+        elif not code_capable:
             output = "Here is the revised text, as requested."
         elif item.kind == "no_code":
             output = "```python\ndef answer():\n    return 'done'\n```" if item.task_id in self.codes_anyway else "NOT_A_CODE_TASK"
@@ -155,9 +173,12 @@ class _Context:
     def __init__(self, corpus_dir: Path, out_dir: Path, providers: dict, forbidden: tuple):
         self.corpus_dir, self.out_dir, self.forbidden = corpus_dir, out_dir, forbidden
         self.tasks = load_tasks(corpus_dir)
+        self.config = corpus_config(corpus_dir)
+        self.baseline_route = self.config["baseline_route"]
         catalogue_source = json.loads((corpus_dir.parent / "routing_smoke" / "routes.json").read_text(encoding="utf-8"))["routes"]
         descriptions = {r["id"]: r["description"] for r in catalogue_source}
-        self.catalogue = [{"id": rid, "description": descriptions.get(rid, rid)} for rid in route_ids(corpus_dir)]
+        self.catalogue = [{"id": rid, "description": descriptions.get(rid, rid)} for rid in route_ids(corpus_dir)
+                          if rid not in self.config["catalogue_exclude"]]
         self.intake = intake_battery(self.catalogue)
         self.postflight = postflight_battery()
         self.route_refs = tuple(RouteRef(r["id"], r["description"], _sha(canonical_json(r))) for r in self.catalogue)
@@ -232,6 +253,7 @@ def run_matrix(
         "corpus_dir": str(corpus_dir.resolve()),
         "corpus_digest": corpus_digest(corpus_dir),
         "representations": {rep: REPRESENTATIONS[rep] for rep in reps},
+        "baseline_route": ctx.baseline_route,
         "deciders": deciders,
         "arms": [arm.arm_id for arm in arms],
         "generator": generator_meta,
@@ -308,10 +330,10 @@ def _arm_trial(ctx, arm: Arm, task: UsefulnessTask, decisions, provider_deciders
     timings: dict[str, float] = {}
     record = {
         "arm": arm.arm_id, "rep": arm.rep, "decider": arm.decider, "task_id": task.task_id, "kind": task.kind,
-        "language": task.language, "decision": None, "route": BASELINE_ROUTE, "declined_by": None,
+        "language": task.language, "tags": list(task.tags), "decision": None, "route": ctx.baseline_route, "declined_by": None,
         "generated": False, "generation_cache_hit": False, "prompt_digest": None,
         "generator_tokens_in": 0, "generator_tokens_out": 0, "decision_tokens": 0, "decision_calls": 0,
-        "code_extracted": False, "sandbox": None, "success": False, "postflight": None, "error": None,
+        "code_extracted": False, "sandbox": None, "success": False, "verdict": None, "postflight": None, "error": None,
         "output_digest": None, "raw_output": None,
     }
     if arm.decider != NO_DECIDER:
@@ -360,21 +382,14 @@ def _arm_trial(ctx, arm: Arm, task: UsefulnessTask, decisions, provider_deciders
 
     code = extract_code(output)
     record["code_extracted"] = code is not None
-    if task.kind == "code":
-        if code is not None:
-            code_key = _sha(f"{task.task_id}\x00{code}")
-            if code_key not in sandboxes:
-                result = sandbox.run_tests({"solution.py": code, "test_task.py": hidden_tests(ctx.corpus_dir, task)})
-                sandboxes[code_key] = {"passed": result.passed, "tests_run": result.tests_run, "failures": result.failures,
-                                       "timed_out": result.timed_out, "ms": result.elapsed_ms}
-            outcome = sandboxes[code_key]
-            timings["sandbox"] = outcome["ms"]
-            record["sandbox"] = {k: v for k, v in outcome.items() if k != "ms"}
-            record["success"] = outcome["passed"]
-    else:
-        record["success"] = record["error"] is None and code is None
-        if output is not None and says_not_applicable(output):
-            record["declined_by"] = "generator"
+    verdict = verify(task, output, VerifyContext(ctx.corpus_dir, sandbox, sandboxes), error=record["error"])
+    if verdict.sandbox is not None:
+        timings["sandbox"] = verdict.sandbox["ms"]
+        record["sandbox"] = {k: v for k, v in verdict.sandbox.items() if k != "ms"}
+    record["success"] = verdict.success
+    record["verdict"] = {"outcome": verdict.outcome, **verdict.details}
+    if task.kind != "code" and output is not None and says_not_applicable(output):
+        record["declined_by"] = "generator"
 
     if code is not None and arm.rep in postflight_reps and arm.decider in ctx.providers:
         pf_key = (arm.decider, _sha(f"{task.task_id}\x00{code}"))

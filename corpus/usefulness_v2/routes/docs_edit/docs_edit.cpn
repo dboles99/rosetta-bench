@@ -1,0 +1,8 @@
+SCHEMA_VER=1.0
+DELIVERABLE=revised-documentation-text
+IF_NOT_DOCS=reply NOT_A_DOCS_TASK
+IF_PREMISE_FALSE=reply PREMISE_REJECTED: <which premise is false and why>
+IF_UNSOLVABLE=reply UNSOLVABLE: <one-line reason naming the conflicting or impossible requirements>
+OUTPUT_FORMAT=markdown-prose,no-code
+ROUTE=docs_edit
+SCOPE=documentation-only

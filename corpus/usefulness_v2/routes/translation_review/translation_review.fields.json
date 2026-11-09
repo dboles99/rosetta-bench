@@ -1,0 +1,11 @@
+{
+  "fields": {
+    "DELIVERABLE": "translation-issues",
+    "IF_PREMISE_FALSE": "reply PREMISE_REJECTED: <which premise is false and why>",
+    "IF_UNSOLVABLE": "reply UNSOLVABLE: <one-line reason naming the conflicting or impossible requirements>",
+    "OUTPUT_FORMAT": "bullets:[segment-id],issue,fix;problems-only",
+    "ROUTE": "translation_review",
+    "SCOPE": "review-only,no-retranslation"
+  },
+  "schema_ver": "1.0"
+}
