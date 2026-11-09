@@ -56,6 +56,8 @@ REPRESENTATIONS = {
     "P": "plain prose prompt (the contract's hand-written notes, no Rosetta structure)",
     "H": "Rosetta human view (.md: generated field list plus notes)",
     "M": "Rosetta machine view (.cpn packet, loaded by rosetta_core.loader)",
+    "R": "reason-first: a planner (reasoning on) writes a plan, rosetta-core compiles it into a canonical packet, "
+         "and the executor (reasoning off) follows the M contract plus the plan",
 }
 _ALIASES = {"PLAIN": "P", "HUMAN": "H", "MACHINE": "M"}
 

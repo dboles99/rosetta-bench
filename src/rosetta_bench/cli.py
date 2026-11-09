@@ -199,11 +199,27 @@ def _usefulness_command(args) -> int:
             return fail("live runs need an explicit --max-generator-calls budget")
         from rosetta_bench.runners.ollama_runner import OllamaHTTPClient, OllamaRunner
 
-        settings = {"temperature": 0, "seed": args.seed}
-        generator = OllamaRunner(args.generator_model, OllamaHTTPClient(args.ollama_host, timeout_s=args.generator_timeout, options=settings))
+        settings = {"temperature": args.temperature, "seed": args.seed}
+        think = {"default": None, "on": True, "off": False}[args.generator_think]
+        generator = OllamaRunner(args.generator_model, OllamaHTTPClient(args.ollama_host, timeout_s=args.generator_timeout,
+                                                                         options=settings, think=think))
         meta = {"kind": "ollama", "model": args.generator_model, "host": args.ollama_host,
-                "timeout_s": args.generator_timeout, "settings": settings}
+                "timeout_s": args.generator_timeout, "settings": {**settings, "think": think}}
     generator = pipeline.BudgetedGenerator(generator, args.max_generator_calls)
+
+    planner, planner_meta = None, None
+    if pipeline.REASON_FIRST in reps:
+        if args.generator == "fake":
+            planner = pipeline.FakePlanner(Path(args.corpus))
+            planner_meta = {"kind": "fake", "model": planner.model}
+        else:
+            from rosetta_bench.runners.ollama_runner import OllamaHTTPClient, OllamaRunner
+
+            planner_settings = {"temperature": args.temperature, "seed": args.seed}
+            planner = OllamaRunner(args.generator_model, OllamaHTTPClient(args.ollama_host, timeout_s=args.generator_timeout,
+                                                                           options=planner_settings, think=True))
+            planner_meta = {"kind": "ollama", "model": args.generator_model, "settings": {**planner_settings, "think": True}}
+        planner = pipeline.BudgetedGenerator(planner, args.max_generator_calls)
 
     providers = {}
     for name in deciders:
@@ -232,7 +248,8 @@ def _usefulness_command(args) -> int:
     postflight_reps = tuple(r.strip() for r in args.postflight_reps.split(",") if r.strip())
     try:
         pipeline.run_matrix(Path(args.corpus), reps, deciders, generator, meta, out, seed=args.seed,
-                            live=bool(live_parts), providers=providers, postflight_reps=postflight_reps)
+                            live=bool(live_parts), providers=providers, postflight_reps=postflight_reps,
+                            planner=planner, planner_meta=planner_meta)
     except (ValueError, FileExistsError) as exc:
         return fail(str(exc))
     print(f"wrote {out}")
@@ -321,6 +338,9 @@ def main(argv: list[str] | None = None) -> int:
     useful_run.add_argument("--generator-model", default="kimi-k2.7-code:cloud")
     useful_run.add_argument("--ollama-host", default="http://localhost:11434")
     useful_run.add_argument("--generator-timeout", type=float, default=300.0)
+    useful_run.add_argument("--generator-think", choices=("default", "on", "off"), default="default",
+                            help="model reasoning for the generator (the R planner always reasons)")
+    useful_run.add_argument("--temperature", type=float, default=0.0)
     useful_run.add_argument("--live", action="store_true")
     useful_run.add_argument("--max-generator-calls", type=int, default=None)
     useful_run.add_argument("--max-decision-calls", type=int, default=None)

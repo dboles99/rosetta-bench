@@ -63,12 +63,14 @@ from rosetta_bench.provenance import git_state
 
 from .corpus import REPRESENTATIONS, UsefulnessTask, corpus_config, corpus_digest, load_tasks, route_contract, route_ids
 from .extract import extract_code, says_not_applicable
+from .reason_first import PLANNER_PROMPT, PlanError, execution_prompt, non_proceed_output, parse_plan
 from .verify import VerifyContext, verify
 
 BASELINE_ROUTE = "code_change"
 SANDBOX_FACTORY = None  # tests replace this with a fake; None means the real Docker sandbox
 NO_DECIDER = "none"
 CONSENSUS = "consensus"
+REASON_FIRST = "R"
 
 
 @dataclass(frozen=True)
@@ -219,9 +221,13 @@ def run_matrix(
     providers: dict | None = None,  # name -> (profile, transport, api_key)
     postflight_reps: tuple[str, ...] = (),
     sandbox=None,
+    planner=None,
+    planner_meta: dict | None = None,
 ) -> Path:
     corpus_dir, out_dir = Path(corpus_dir), Path(out_dir)
     providers = providers or {}
+    if REASON_FIRST in reps and planner is None:
+        raise ValueError("representation R (reason-first) needs a planner")
     if (out_dir / "manifest.json").exists():
         raise FileExistsError(f"a run already exists in {out_dir}; choose a new --out directory")
     unknown_reps = [r for r in reps if r not in REPRESENTATIONS]
@@ -257,6 +263,7 @@ def run_matrix(
         "deciders": deciders,
         "arms": [arm.arm_id for arm in arms],
         "generator": generator_meta,
+        "planner": planner_meta if REASON_FIRST in reps else None,
         "providers": {
             name: {"profile": profile.name, "requested_model": profile.default_model,
                    "expected_served_model": profile.expected_served_model,
@@ -285,7 +292,7 @@ def run_matrix(
         postflights: dict[tuple[str, str], dict] = {}
         for arm, task in plan:
             record = _arm_trial(ctx, arm, task, decisions, provider_deciders, generator, sandbox,
-                                generations, sandboxes, postflights, postflight_reps)
+                                generations, sandboxes, postflights, postflight_reps, planner=planner)
             record.update({"run_id": run_id, "synthetic": manifest["synthetic"]})
             assert_no_secrets(record, forbidden=api_keys)
             _append(out_dir / "trials.jsonl", record)
@@ -317,6 +324,7 @@ def _decide_all(ctx: _Context, provider_deciders: list[str], seed: int) -> dict:
                 "served_model": ask.result.served_model if isinstance(ask.result, AnswerBatch) else None,
                 "provider_error": None if isinstance(ask.result, AnswerBatch) else {"kind": ask.result.kind.value, "detail": ask.result.detail},
                 "input_tokens": ask.input_tokens or 0, "calls": ask.calls, "decision_ms": ask.elapsed_ms,
+                "transport_retries": ask.transport_retries,
                 "state_digest": state_digest(state),
             }
             assert_no_secrets(record, forbidden=ctx.forbidden)
@@ -325,8 +333,98 @@ def _decide_all(ctx: _Context, provider_deciders: list[str], seed: int) -> dict:
     return decisions
 
 
+def _generate(generations: dict, runner, tag: str, prompt: str, task: Task) -> dict:
+    """One generation, shared by identical (runner, prompt, request); every user is charged its cost."""
+    from time import perf_counter
+
+    key = _sha(f"{tag}\x00{prompt}\x00{task.instructions}")
+    if key in generations:
+        return {**generations[key], "key": key, "hit": True}
+    started = perf_counter()
+    try:
+        result = runner.run(prompt, task)
+        cached = {"output": result.raw_output, "tokens_in": result.tokens_in, "tokens_out": result.tokens_out,
+                  "ms": (perf_counter() - started) * 1000, "error": None, "meta": dict(getattr(result, "meta", {}) or {})}
+    except (GeneratorBudgetExceeded, BudgetExceeded):
+        raise
+    except Exception as exc:  # a failed generation is a recorded failure
+        cached = {"output": None, "tokens_in": 0, "tokens_out": 0, "ms": (perf_counter() - started) * 1000,
+                  "error": f"{type(exc).__name__}: {exc}"[:300], "meta": {}}
+    generations[key] = cached
+    return {**cached, "key": key, "hit": False}
+
+
+def _reason_first(ctx, task: UsefulnessTask, record: dict, timings: dict, executor, planner, generations) -> str | None:
+    """Reasoning -> prompt -> Rosetta -> execution. The planner (reasoning on) writes a plan; rosetta-core
+    turns it into a canonical, validated packet; the executor (reasoning off) follows it. A refusing
+    verdict is answered with the contract marker and nothing is executed."""
+    request = Task(name=task.task_id, instructions=task.request_text)
+    planned = _generate(generations, planner, "planner", PLANNER_PROMPT, request)
+    timings["planning"] = planned["ms"]
+    record.update(planner_tokens_in=planned["tokens_in"], planner_tokens_out=planned["tokens_out"],
+                  planner_reasoning_tokens_est=planned["meta"].get("estimated_reasoning_tokens"),
+                  plan_cache_hit=planned["hit"])
+    record["generator_tokens_in"], record["generator_tokens_out"] = planned["tokens_in"], planned["tokens_out"]
+    if planned["error"]:
+        record["error"] = f"planning: {planned['error']}"
+        record["plan"] = {"verdict": None, "digest": None, "error": planned["error"]}
+        return None
+    try:
+        plan = parse_plan(planned["output"])
+        record["plan"] = {"verdict": plan.verdict, "digest": plan.digest, "error": None}
+    except PlanError as exc:
+        plan = None
+        record["plan"] = {"verdict": None, "digest": None, "error": str(exc)[:200]}
+    if plan is not None and plan.verdict != "PROCEED":
+        record["generated"] = True
+        record["executor_tokens_in"] = record["executor_tokens_out"] = 0
+        return non_proceed_output(plan)
+
+    contract = route_contract(ctx.corpus_dir, record["route"], "M")
+    if plan is not None:
+        prompt, follow = execution_prompt(contract, plan, task.request_text), Task(name=task.task_id, instructions="Follow the plan above.")
+    else:  # unusable plan: execute without one, and record that the plan failed
+        prompt, follow = contract, request
+    executed = _generate(generations, executor, "executor", prompt, follow)
+    timings["generation"] = executed["ms"]
+    record["prompt_digest"] = executed["key"]
+    record["generation_cache_hit"] = executed["hit"]
+    record.update(executor_tokens_in=executed["tokens_in"], executor_tokens_out=executed["tokens_out"])
+    record["generator_tokens_in"] += executed["tokens_in"]
+    record["generator_tokens_out"] += executed["tokens_out"]
+    record["reasoning_tokens_est"] = (planned["meta"].get("estimated_reasoning_tokens") or 0) + (executed["meta"].get("estimated_reasoning_tokens") or 0)
+    record["generated"] = executed["error"] is None
+    record["error"] = executed["error"]
+    return executed["output"]
+
+
+class FakePlanner:
+    """SYNTHETIC offline planner: answers from each task's own definition. Not a model."""
+
+    name = "FAKE"
+    model = "fake-planner-1"
+
+    def __init__(self, corpus_dir: Path, garbage=()):
+        self.tasks = {t.task_id: t for t in load_tasks(corpus_dir)}
+        self.garbage = set(garbage)
+
+    def run(self, prompt_text: str, task: Task | None) -> RunResult:
+        item = self.tasks[task.name]
+        if item.task_id in self.garbage:
+            text = "I think we should just write it."
+        else:
+            terms = [group[0] if isinstance(group, list) else group
+                     for group in item.check.get("conflict_terms", []) + item.check.get("mentions", [])]
+            reason = ("conflicting requirements: " + ", ".join(terms)) if terms else "see request"
+            verdict = {"unsolvable": "UNSOLVABLE", "false_premise": "PREMISE_REJECTED", "no_code": "NOT_A_CODE_TASK"}.get(item.kind, "PROCEED")
+            text = (f"SCHEMA_VER=1.0\nVERDICT={verdict}\nENTRY_POINT={item.entry_point or 'none'}\nSIGNATURE=none\n"
+                    f"STEPS=1 read the request | 2 implement it\nEDGE_CASES=none\nREASON={'none' if verdict == 'PROCEED' else reason}\n")
+        return RunResult(raw_output=text, tokens_in=len(prompt_text.split()), tokens_out=len(text.split()), latency_ms=0.0,
+                         meta={"estimated_reasoning_tokens": 50})
+
+
 def _arm_trial(ctx, arm: Arm, task: UsefulnessTask, decisions, provider_deciders, generator, sandbox,
-               generations, sandboxes, postflights, postflight_reps) -> dict:
+               generations, sandboxes, postflights, postflight_reps, planner=None) -> dict:
     timings: dict[str, float] = {}
     record = {
         "arm": arm.arm_id, "rep": arm.rep, "decider": arm.decider, "task_id": task.task_id, "kind": task.kind,
@@ -352,31 +450,19 @@ def _arm_trial(ctx, arm: Arm, task: UsefulnessTask, decisions, provider_deciders
 
     output = None
     if record["route"] is not None:
-        prompt = route_contract(ctx.corpus_dir, record["route"], arm.rep)
-        key = _sha(f"{prompt}\x00{task.request_text}")
-        record["prompt_digest"] = key
-        if key in generations:
-            cached = generations[key]
-            record["generation_cache_hit"] = True
+        if arm.rep == REASON_FIRST:
+            output = _reason_first(ctx, task, record, timings, generator, planner, generations)
         else:
-            from time import perf_counter
-
-            started = perf_counter()
-            try:
-                result = generator.run(prompt, Task(name=task.task_id, instructions=task.request_text))
-                cached = {"output": result.raw_output, "tokens_in": result.tokens_in, "tokens_out": result.tokens_out,
-                          "ms": (perf_counter() - started) * 1000, "error": None}
-            except (GeneratorBudgetExceeded, BudgetExceeded):
-                raise
-            except Exception as exc:  # a failed generation is a recorded failure
-                cached = {"output": None, "tokens_in": 0, "tokens_out": 0, "ms": (perf_counter() - started) * 1000,
-                          "error": f"{type(exc).__name__}: {exc}"[:300]}
-            generations[key] = cached
-        timings["generation"] = cached["ms"]
-        record["generated"] = cached["error"] is None
-        record["error"] = cached["error"]
-        record["generator_tokens_in"], record["generator_tokens_out"] = cached["tokens_in"], cached["tokens_out"]
-        output = cached["output"]
+            prompt = route_contract(ctx.corpus_dir, record["route"], arm.rep)
+            cached = _generate(generations, generator, "generator", prompt, Task(name=task.task_id, instructions=task.request_text))
+            record["prompt_digest"] = cached["key"]
+            record["generation_cache_hit"] = cached["hit"]
+            timings["generation"] = cached["ms"]
+            record["generated"] = cached["error"] is None
+            record["error"] = cached["error"]
+            record["generator_tokens_in"], record["generator_tokens_out"] = cached["tokens_in"], cached["tokens_out"]
+            record["reasoning_tokens_est"] = cached["meta"].get("estimated_reasoning_tokens")
+            output = cached["output"]
         if output is not None:
             record["raw_output"], record["output_digest"] = output, _sha(output)
 
@@ -456,7 +542,7 @@ def _receipt(ctx, record, run_id, repos, arm: Arm, generator, decisions, provide
                   "generator_tokens_out": record["generator_tokens_out"]},
         "cost": cost,
         "timings_ms": record["timings_ms"],
-        "retries": {"transport": 0, "semantic": 0},
+        "retries": {"transport": sum(e.get("transport_retries", 0) for e in entries), "semantic": 0},
         "output_digest": record["output_digest"],
         "outcome": {"verified_success": record["success"],
                     "checks": {"acceptance_tests": record["sandbox"]["passed"] if record["sandbox"] else None,
