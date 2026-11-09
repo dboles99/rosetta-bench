@@ -1,0 +1,117 @@
+{
+  "schema": "rosetta-bench/decision-eval@1",
+  "run_id": "eval-eabf1825ad45",
+  "created_at": "2026-11-09T00:23:46.822899+00:00",
+  "corpus_dir": "G:\\dev2\\rosetta-bench\\.worktrees\\decision-questions\\corpus\\decision_v1",
+  "corpus_digest": "4bb1fcc860aa236c16b41b06ec5f45bbc6dca8dcd1e636d0100ef3e2fb9a5c4d",
+  "item_filter": [
+    "req-en-01-missing"
+  ],
+  "provider": {
+    "profile": "clef-ollama",
+    "endpoint": "http://localhost:11434/v1/systemone",
+    "requested_model": "clef:cloud",
+    "expected_served_model": "clef",
+    "notes": "Local Ollama forwarding to Ollama Cloud (verified working 2026-11-05 per local skill notes); clef docs: up to 64 questions; choice 2-26 options locally. Live probe 2026-11-09: a clef:cloud request is reported as model 'clef' with no version, so revision drift is NOT detectable on this route; noul criteria keyed yes/no are rejected with HTTP 400."
+  },
+  "synthetic": false,
+  "live": true,
+  "seed": 20261109,
+  "order": [
+    "req-en-01-missing"
+  ],
+  "state_time": "2026-11-09T00:23:46+00:00",
+  "question_sets": {
+    "requirements": {
+      "set_id": "eval_requirements",
+      "version": "1.0",
+      "hash": "53adfd59080e5cffa56309c117ebda3d484d89e6ebcbaac572e96c529265405e",
+      "qids": [
+        "requirements_sufficient",
+        "intervention_level"
+      ]
+    },
+    "feasibility": {
+      "set_id": "eval_feasibility",
+      "version": "1.0",
+      "hash": "ef34b001fb9ac68b168117e9f618b5a6d8f3ce8af221015db44a74dc337ab2d3",
+      "qids": [
+        "task_feasible"
+      ]
+    },
+    "no_win": {
+      "set_id": "eval_no_win",
+      "version": "1.0",
+      "hash": "2c406601a622e0ce52cdf412602f4cb9592d02e7eccc48479f8f769c72709f84",
+      "qids": [
+        "task_feasible",
+        "premise_valid"
+      ]
+    },
+    "premise": {
+      "set_id": "eval_premise",
+      "version": "1.0",
+      "hash": "7e7b3854945be77c050bb0265f054a589c0547c591db9b2973d1ea2a1704741d",
+      "qids": [
+        "premise_valid"
+      ]
+    },
+    "meaning": {
+      "set_id": "eval_meaning",
+      "version": "1.0",
+      "hash": "52420718188ad516d5237c1593905f0275f38c7c7bb609602d2bec75a54ff15a",
+      "qids": [
+        "meaning_changed"
+      ]
+    },
+    "support": {
+      "set_id": "eval_support",
+      "version": "1.0",
+      "hash": "4dbdbc6a8e194b17326538d6f3007d20f10b38b58076a50321d42030b6098553",
+      "qids": [
+        "output_supported"
+      ]
+    },
+    "notes": {
+      "set_id": "eval_notes",
+      "version": "1.0",
+      "hash": "9ed189700dba964922605da06edb8631d1aa6ade46db6c34e701b17601056372",
+      "qids": [
+        "notes_consistent"
+      ]
+    },
+    "views": {
+      "set_id": "eval_views",
+      "version": "1.0",
+      "hash": "50a967f7fa28c1a00e792dceee20bcfa20894eb3935d589a8e1838e63b431860",
+      "qids": [
+        "views_equivalent"
+      ]
+    }
+  },
+  "policy": {
+    "policy_id": "eval-placeholder",
+    "version": "0.1",
+    "calibrated": false,
+    "thresholds": {
+      "yes": 0.7,
+      "no": 0.3
+    }
+  },
+  "max_transport_retries": 2,
+  "repos": {
+    "core": {
+      "sha": "b403a5e09a4cd6d3b8b6eb29aa1454ff7be821f4",
+      "dirty": false
+    },
+    "bench": {
+      "sha": "b6ccca2649b97aa25f70a4f88399eb861092a155",
+      "dirty": false
+    }
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "stopped_early": null
+}
