@@ -75,6 +75,9 @@ def test_count_questions_counts_question_marks_in_both_scripts():
     assert count_questions("No questions.") == 0
     assert count_questions("1. Which script? Can you share it?\n2. How slow is it now?") == 2
     assert count_questions("- 哪个脚本？能提供代码吗？\n- 目标是多快？\n- 慢在哪一步？\n- 何时需要？") == 4
+    polite = "まず以下を教えてください。\n\n1. 関数のコードを教えてください。\n2. 新しいルールの内容を教えてください。"
+    assert count_questions(polite) == 2
+    assert count_questions("1. Please share the script.\n2. The deadline.") == 1
 
 
 def test_cheat_patterns_flag_ways_to_game_tests():
