@@ -1,0 +1,657 @@
+{
+  "items": 30,
+  "questions": {
+    "premise_valid": {
+      "all": {
+        "n": 20,
+        "correct": 17,
+        "accuracy": 0.85,
+        "decided": 18,
+        "decided_accuracy": 0.9444444444444444,
+        "abstain": 2,
+        "errors": 0,
+        "brier": 0.07197,
+        "false_pass": 1,
+        "false_pass_of": 10,
+        "over_refusal": 0,
+        "over_refusal_of": 10,
+        "confusion": {
+          "gold_yes": {
+            "yes": 8,
+            "no": 0,
+            "abstain": 2,
+            "error": 0
+          },
+          "gold_no": {
+            "yes": 1,
+            "no": 9,
+            "abstain": 0,
+            "error": 0
+          }
+        }
+      },
+      "by_category": {
+        "code_bug": {
+          "n": 6,
+          "correct": 6,
+          "accuracy": 1.0,
+          "decided": 6,
+          "decided_accuracy": 1.0,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.020550000000000002,
+          "false_pass": 0,
+          "false_pass_of": 3,
+          "over_refusal": 0,
+          "over_refusal_of": 3,
+          "confusion": {
+            "gold_yes": {
+              "yes": 3,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 3,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "near_miss": {
+          "n": 6,
+          "correct": 4,
+          "accuracy": 0.6666666666666666,
+          "decided": 4,
+          "decided_accuracy": 1.0,
+          "abstain": 2,
+          "errors": 0,
+          "brier": 0.09396666666666668,
+          "false_pass": 0,
+          "false_pass_of": 0,
+          "over_refusal": 0,
+          "over_refusal_of": 6,
+          "confusion": {
+            "gold_yes": {
+              "yes": 4,
+              "no": 0,
+              "abstain": 2,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "no_win": {
+          "n": 6,
+          "correct": 5,
+          "accuracy": 0.8333333333333334,
+          "decided": 6,
+          "decided_accuracy": 0.8333333333333334,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.12151666666666666,
+          "false_pass": 1,
+          "false_pass_of": 6,
+          "over_refusal": 0,
+          "over_refusal_of": 0,
+          "confusion": {
+            "gold_yes": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 1,
+              "no": 5,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "rosetta_sync": {
+          "n": 2,
+          "correct": 2,
+          "accuracy": 1.0,
+          "decided": 2,
+          "decided_accuracy": 1.0,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.011600000000000001,
+          "false_pass": 0,
+          "false_pass_of": 1,
+          "over_refusal": 0,
+          "over_refusal_of": 1,
+          "confusion": {
+            "gold_yes": {
+              "yes": 1,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 1,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        }
+      },
+      "by_language": {
+        "en": {
+          "n": 8,
+          "correct": 7,
+          "accuracy": 0.875,
+          "decided": 7,
+          "decided_accuracy": 1.0,
+          "abstain": 1,
+          "errors": 0,
+          "brier": 0.024624999999999998,
+          "false_pass": 0,
+          "false_pass_of": 4,
+          "over_refusal": 0,
+          "over_refusal_of": 4,
+          "confusion": {
+            "gold_yes": {
+              "yes": 3,
+              "no": 0,
+              "abstain": 1,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 4,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "ja": {
+          "n": 6,
+          "correct": 5,
+          "accuracy": 0.8333333333333334,
+          "decided": 6,
+          "decided_accuracy": 0.8333333333333334,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.11738333333333334,
+          "false_pass": 1,
+          "false_pass_of": 3,
+          "over_refusal": 0,
+          "over_refusal_of": 3,
+          "confusion": {
+            "gold_yes": {
+              "yes": 3,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 1,
+              "no": 2,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "zh": {
+          "n": 6,
+          "correct": 5,
+          "accuracy": 0.8333333333333334,
+          "decided": 5,
+          "decided_accuracy": 1.0,
+          "abstain": 1,
+          "errors": 0,
+          "brier": 0.08968333333333334,
+          "false_pass": 0,
+          "false_pass_of": 3,
+          "over_refusal": 0,
+          "over_refusal_of": 3,
+          "confusion": {
+            "gold_yes": {
+              "yes": 2,
+              "no": 0,
+              "abstain": 1,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 3,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        }
+      }
+    },
+    "task_feasible": {
+      "all": {
+        "n": 22,
+        "correct": 14,
+        "accuracy": 0.6363636363636364,
+        "decided": 17,
+        "decided_accuracy": 0.8235294117647058,
+        "abstain": 5,
+        "errors": 0,
+        "brier": 0.15057727272727273,
+        "false_pass": 1,
+        "false_pass_of": 11,
+        "over_refusal": 2,
+        "over_refusal_of": 11,
+        "confusion": {
+          "gold_yes": {
+            "yes": 5,
+            "no": 2,
+            "abstain": 4,
+            "error": 0
+          },
+          "gold_no": {
+            "yes": 1,
+            "no": 9,
+            "abstain": 1,
+            "error": 0
+          }
+        }
+      },
+      "by_category": {
+        "contradiction": {
+          "n": 2,
+          "correct": 2,
+          "accuracy": 1.0,
+          "decided": 2,
+          "decided_accuracy": 1.0,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.0056500000000000005,
+          "false_pass": 0,
+          "false_pass_of": 2,
+          "over_refusal": 0,
+          "over_refusal_of": 0,
+          "confusion": {
+            "gold_yes": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 2,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "feasible": {
+          "n": 5,
+          "correct": 1,
+          "accuracy": 0.2,
+          "decided": 3,
+          "decided_accuracy": 0.3333333333333333,
+          "abstain": 2,
+          "errors": 0,
+          "brier": 0.36218,
+          "false_pass": 0,
+          "false_pass_of": 0,
+          "over_refusal": 2,
+          "over_refusal_of": 5,
+          "confusion": {
+            "gold_yes": {
+              "yes": 1,
+              "no": 2,
+              "abstain": 2,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "impossible": {
+          "n": 2,
+          "correct": 1,
+          "accuracy": 0.5,
+          "decided": 1,
+          "decided_accuracy": 1.0,
+          "abstain": 1,
+          "errors": 0,
+          "brier": 0.08465,
+          "false_pass": 0,
+          "false_pass_of": 2,
+          "over_refusal": 0,
+          "over_refusal_of": 0,
+          "confusion": {
+            "gold_yes": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 1,
+              "abstain": 1,
+              "error": 0
+            }
+          }
+        },
+        "missing_information": {
+          "n": 1,
+          "correct": 1,
+          "accuracy": 1.0,
+          "decided": 1,
+          "decided_accuracy": 1.0,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.0064,
+          "false_pass": 0,
+          "false_pass_of": 1,
+          "over_refusal": 0,
+          "over_refusal_of": 0,
+          "confusion": {
+            "gold_yes": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 1,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "near_miss": {
+          "n": 6,
+          "correct": 4,
+          "accuracy": 0.6666666666666666,
+          "decided": 4,
+          "decided_accuracy": 1.0,
+          "abstain": 2,
+          "errors": 0,
+          "brier": 0.07625,
+          "false_pass": 0,
+          "false_pass_of": 0,
+          "over_refusal": 0,
+          "over_refusal_of": 6,
+          "confusion": {
+            "gold_yes": {
+              "yes": 4,
+              "no": 0,
+              "abstain": 2,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "no_win": {
+          "n": 6,
+          "correct": 5,
+          "accuracy": 0.8333333333333334,
+          "decided": 6,
+          "decided_accuracy": 0.8333333333333334,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.1428833333333333,
+          "false_pass": 1,
+          "false_pass_of": 6,
+          "over_refusal": 0,
+          "over_refusal_of": 0,
+          "confusion": {
+            "gold_yes": {
+              "yes": 0,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 1,
+              "no": 5,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        }
+      },
+      "by_language": {
+        "en": {
+          "n": 9,
+          "correct": 6,
+          "accuracy": 0.6666666666666666,
+          "decided": 8,
+          "decided_accuracy": 0.75,
+          "abstain": 1,
+          "errors": 0,
+          "brier": 0.16356666666666667,
+          "false_pass": 0,
+          "false_pass_of": 5,
+          "over_refusal": 2,
+          "over_refusal_of": 4,
+          "confusion": {
+            "gold_yes": {
+              "yes": 1,
+              "no": 2,
+              "abstain": 1,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 5,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "ja": {
+          "n": 7,
+          "correct": 3,
+          "accuracy": 0.42857142857142855,
+          "decided": 4,
+          "decided_accuracy": 0.75,
+          "abstain": 3,
+          "errors": 0,
+          "brier": 0.20368571428571428,
+          "false_pass": 1,
+          "false_pass_of": 3,
+          "over_refusal": 0,
+          "over_refusal_of": 4,
+          "confusion": {
+            "gold_yes": {
+              "yes": 2,
+              "no": 0,
+              "abstain": 2,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 1,
+              "no": 1,
+              "abstain": 1,
+              "error": 0
+            }
+          }
+        },
+        "zh": {
+          "n": 6,
+          "correct": 5,
+          "accuracy": 0.8333333333333334,
+          "decided": 5,
+          "decided_accuracy": 1.0,
+          "abstain": 1,
+          "errors": 0,
+          "brier": 0.06913333333333332,
+          "false_pass": 0,
+          "false_pass_of": 3,
+          "over_refusal": 0,
+          "over_refusal_of": 3,
+          "confusion": {
+            "gold_yes": {
+              "yes": 2,
+              "no": 0,
+              "abstain": 1,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 3,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "unreviewed": {},
+  "subsets": {
+    "kobayashi_maru": {
+      "task_feasible": {
+        "inside": {
+          "n": 12,
+          "correct": 9,
+          "accuracy": 0.75,
+          "decided": 10,
+          "decided_accuracy": 0.9,
+          "abstain": 2,
+          "errors": 0,
+          "brier": 0.10956666666666666,
+          "false_pass": 1,
+          "false_pass_of": 6,
+          "over_refusal": 0,
+          "over_refusal_of": 6,
+          "confusion": {
+            "gold_yes": {
+              "yes": 4,
+              "no": 0,
+              "abstain": 2,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 1,
+              "no": 5,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "outside": {
+          "n": 10,
+          "correct": 5,
+          "accuracy": 0.5,
+          "decided": 7,
+          "decided_accuracy": 0.7142857142857143,
+          "abstain": 3,
+          "errors": 0,
+          "brier": 0.19979,
+          "false_pass": 0,
+          "false_pass_of": 5,
+          "over_refusal": 2,
+          "over_refusal_of": 5,
+          "confusion": {
+            "gold_yes": {
+              "yes": 1,
+              "no": 2,
+              "abstain": 2,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 4,
+              "abstain": 1,
+              "error": 0
+            }
+          }
+        }
+      },
+      "premise_valid": {
+        "inside": {
+          "n": 12,
+          "correct": 9,
+          "accuracy": 0.75,
+          "decided": 10,
+          "decided_accuracy": 0.9,
+          "abstain": 2,
+          "errors": 0,
+          "brier": 0.10774166666666667,
+          "false_pass": 1,
+          "false_pass_of": 6,
+          "over_refusal": 0,
+          "over_refusal_of": 6,
+          "confusion": {
+            "gold_yes": {
+              "yes": 4,
+              "no": 0,
+              "abstain": 2,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 1,
+              "no": 5,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        },
+        "outside": {
+          "n": 8,
+          "correct": 8,
+          "accuracy": 1.0,
+          "decided": 8,
+          "decided_accuracy": 1.0,
+          "abstain": 0,
+          "errors": 0,
+          "brier": 0.018312500000000002,
+          "false_pass": 0,
+          "false_pass_of": 4,
+          "over_refusal": 0,
+          "over_refusal_of": 4,
+          "confusion": {
+            "gold_yes": {
+              "yes": 4,
+              "no": 0,
+              "abstain": 0,
+              "error": 0
+            },
+            "gold_no": {
+              "yes": 0,
+              "no": 4,
+              "abstain": 0,
+              "error": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "raw_score_shapes": {
+    "field_sets": {},
+    "example": null
+  },
+  "outcomes": {
+    "ACCEPT": 25,
+    "ABSTAIN": 5
+  },
+  "provider_errors": {},
+  "calls": 30,
+  "transport_retries": 0,
+  "input_tokens": 21284,
+  "served_models": {
+    "jev-1.14.0": 30
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "schema": "rosetta-bench/decision-eval@1",
+  "run_id": "eval-686017033df2",
+  "created_at": "2026-11-09T03:22:02.819515+00:00",
+  "corpus_dir": "G:\\dev2\\rosetta-bench\\.worktrees\\exp-decision-layer\\corpus\\decision_v1",
+  "corpus_digest": "4bb1fcc860aa236c16b41b06ec5f45bbc6dca8dcd1e636d0100ef3e2fb9a5c4d",
+  "item_filter": [
+    "feas-en-01",
+    "feas-en-02",
+    "feas-en-03",
+    "feas-en-04",
+    "feas-en-05",
+    "feas-ja-01",
+    "feas-ja-02",
+    "feas-ja-03",
+    "feas-zh-01",
+    "feas-zh-02",
+    "km-en-01-near-miss",
+    "km-en-01-no-win",
+    "km-en-02-near-miss",
+    "km-en-02-no-win",
+    "km-ja-01-near-miss",
+    "km-ja-01-no-win",
+    "km-ja-02-near-miss",
+    "km-ja-02-no-win",
+    "km-zh-01-near-miss",
+    "km-zh-01-no-win",
+    "km-zh-02-near-miss",
+    "km-zh-02-no-win",
+    "prem-en-01-false",
+    "prem-en-01-true",
+    "prem-en-02-false",
+    "prem-en-02-true",
+    "prem-ja-01-false",
+    "prem-ja-01-true",
+    "prem-zh-01-false",
+    "prem-zh-01-true"
+  ],
+  "provider": {
+    "profile": "jevmodel",
+    "endpoint": "https://jevmodel.org/v1/systemone",
+    "requested_model": "jev-latest",
+    "expected_served_model": "jev-1.14.0",
+    "notes": "jevmodel.org/docs read 2026-11-09: unaffiliated reseller of TypeSafe's Jev; 1-8 questions, choice 2-20 options, score returns score+confidence only, only jev-latest/jev-preview, 120 requests/min per key, no Retry-After documented. Live probe 2026-11-09: a jev-latest request was served and reported as jev-1.14.0."
+  },
+  "synthetic": false,
+  "live": true,
+  "seed": 20261109,
+  "order": [
+    "prem-zh-01-true",
+    "km-ja-02-no-win",
+    "feas-ja-02",
+    "feas-ja-01",
+    "prem-ja-01-true",
+    "km-zh-02-no-win",
+    "km-ja-01-no-win",
+    "prem-en-01-true",
+    "km-en-02-no-win",
+    "prem-en-02-true",
+    "km-en-01-no-win",
+    "prem-en-02-false",
+    "feas-en-03",
+    "prem-en-01-false",
+    "km-ja-02-near-miss",
+    "km-zh-02-near-miss",
+    "prem-zh-01-false",
+    "feas-zh-02",
+    "feas-en-04",
+    "km-zh-01-no-win",
+    "feas-en-01",
+    "prem-ja-01-false",
+    "km-en-01-near-miss",
+    "km-en-02-near-miss",
+    "feas-en-05",
+    "km-ja-01-near-miss",
+    "feas-ja-03",
+    "km-zh-01-near-miss",
+    "feas-en-02",
+    "feas-zh-01"
+  ],
+  "state_time": "2026-11-09T03:22:02+00:00",
+  "question_sets": {
+    "requirements": {
+      "set_id": "eval_requirements",
+      "version": "1.0",
+      "hash": "53adfd59080e5cffa56309c117ebda3d484d89e6ebcbaac572e96c529265405e",
+      "qids": [
+        "requirements_sufficient",
+        "intervention_level"
+      ]
+    },
+    "feasibility": {
+      "set_id": "eval_feasibility",
+      "version": "1.0",
+      "hash": "ef34b001fb9ac68b168117e9f618b5a6d8f3ce8af221015db44a74dc337ab2d3",
+      "qids": [
+        "task_feasible"
+      ]
+    },
+    "no_win": {
+      "set_id": "eval_no_win",
+      "version": "1.0",
+      "hash": "2c406601a622e0ce52cdf412602f4cb9592d02e7eccc48479f8f769c72709f84",
+      "qids": [
+        "task_feasible",
+        "premise_valid"
+      ]
+    },
+    "premise": {
+      "set_id": "eval_premise",
+      "version": "1.0",
+      "hash": "7e7b3854945be77c050bb0265f054a589c0547c591db9b2973d1ea2a1704741d",
+      "qids": [
+        "premise_valid"
+      ]
+    },
+    "meaning": {
+      "set_id": "eval_meaning",
+      "version": "1.0",
+      "hash": "52420718188ad516d5237c1593905f0275f38c7c7bb609602d2bec75a54ff15a",
+      "qids": [
+        "meaning_changed"
+      ]
+    },
+    "support": {
+      "set_id": "eval_support",
+      "version": "1.0",
+      "hash": "4dbdbc6a8e194b17326538d6f3007d20f10b38b58076a50321d42030b6098553",
+      "qids": [
+        "output_supported"
+      ]
+    },
+    "notes": {
+      "set_id": "eval_notes",
+      "version": "1.0",
+      "hash": "9ed189700dba964922605da06edb8631d1aa6ade46db6c34e701b17601056372",
+      "qids": [
+        "notes_consistent"
+      ]
+    },
+    "views": {
+      "set_id": "eval_views",
+      "version": "1.0",
+      "hash": "50a967f7fa28c1a00e792dceee20bcfa20894eb3935d589a8e1838e63b431860",
+      "qids": [
+        "views_equivalent"
+      ]
+    }
+  },
+  "policy": {
+    "policy_id": "eval-placeholder",
+    "version": "0.1",
+    "calibrated": false,
+    "thresholds": {
+      "yes": 0.7,
+      "no": 0.3
+    }
+  },
+  "max_transport_retries": 2,
+  "repos": {
+    "core": {
+      "sha": "544c1234198029833e4cf4d0a16ddb034594a35b",
+      "dirty": false
+    },
+    "bench": {
+      "sha": "fb66f75616fb2d0ef221d185626718c80e953c8b",
+      "dirty": true
+    }
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "stopped_early": null
+}
