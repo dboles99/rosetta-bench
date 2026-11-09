@@ -167,6 +167,22 @@ def _usefulness_command(args) -> int:
 
         print(f"wrote {write_usefulness_report(Path(args.run))}")
         return 0
+    if args.usefulness_command == "compare":
+        from rosetta_bench.usefulness.replicates import compare_arms, render_comparison
+
+        groups = {}
+        for spec in args.arm:
+            label, _, dirs = spec.partition("=")
+            groups[label] = [Path(d) for d in dirs.split(",") if d]
+        try:
+            result = compare_arms(groups, n_boot=args.boot, seed=args.seed)
+        except ValueError as exc:
+            print(f"not compared: {exc}", file=sys.stderr)
+            return 2
+        Path(args.out).write_text(render_comparison(result), encoding="utf-8", newline="\n")
+        Path(args.out).with_suffix(".json").write_text(json.dumps(result, indent=2), encoding="utf-8", newline="\n")
+        print(f"wrote {args.out}")
+        return 0
 
     from rosetta_bench.decision.fake_provider import FakeSystemOne
     from rosetta_bench.decision.profiles import PROFILES
@@ -347,6 +363,11 @@ def main(argv: list[str] | None = None) -> int:
     useful_run.add_argument("--seed", type=int, default=20261109)
     useful_run.add_argument("--out", required=True)
     usefulness_subparsers.add_parser("report").add_argument("--run", required=True)
+    compare_parser = usefulness_subparsers.add_parser("compare", help="pool repeated runs per arm and compare arms paired by task")
+    compare_parser.add_argument("--arm", action="append", required=True, help="LABEL=run_dir[,run_dir...] (repeat per arm)")
+    compare_parser.add_argument("--out", required=True)
+    compare_parser.add_argument("--boot", type=int, default=10_000)
+    compare_parser.add_argument("--seed", type=int, default=0)
 
     results_parser = subparsers.add_parser("results")
     results_subparsers = results_parser.add_subparsers(dest="results_command", required=True)
