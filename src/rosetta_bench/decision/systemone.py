@@ -89,6 +89,11 @@ def _score_answer(qid: str, raw: dict, question: QuestionDef | None, profile: Pr
         probs = tuple(probabilities)
     elif isinstance(probabilities, dict) and levels and set(probabilities) == set(levels):
         probs = tuple(probabilities[level] for level in levels)
+    elif (isinstance(probabilities, dict) and isinstance(legend, dict) and levels and set(probabilities) == set(legend)
+          and sorted(legend.values()) == sorted(levels)):
+        # keyed by the provider's own legend keys (clef): map each key to its level through that legend
+        by_level = {legend[key]: value for key, value in probabilities.items()}
+        probs = tuple(by_level[level] for level in levels)
     else:
         probs = None
     return ScoreAnswer(qid, float(score) - base, probs, raw.get("confidence"))

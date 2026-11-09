@@ -1,0 +1,8 @@
+{
+  "name": "decision_v1",
+  "version": "1.0",
+  "gold_source": "construction",
+  "generator": "rosetta_bench.decision.eval_corpus",
+  "items": 142,
+  "note": "Gold answers follow from how each item was built; intervention_level is author_unreviewed."
+}

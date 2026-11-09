@@ -1,0 +1,142 @@
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-en-01-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying 'deadline'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-en-01-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-en-02-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying 'target language'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-en-02-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-en-03-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying 'reference style'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-en-03-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-en-04-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying 'region'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-en-04-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-zh-05-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying '學科領域'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-zh-05-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-zh-06-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying '字數'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-zh-06-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-zh-07-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying '期刊名稱'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-zh-07-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-ja-08-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying '納期'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-ja-08-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-ja-09-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying '訳文の言語'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-ja-09-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "all required sentences present", "gold": {"intervention_level": null, "requirements_sufficient": true}, "gold_source": "construction", "item_id": "req-ja-10-complete", "unreviewed": {"intervention_level": {"author_level": "none", "review_status": "author_unreviewed"}}}
+{"construction": "dropped the sentence carrying '投稿先ジャーナル'", "gold": {"intervention_level": null, "requirements_sufficient": false}, "gold_source": "construction", "item_id": "req-ja-10-missing", "unreviewed": {"intervention_level": {"author_level": "minor", "review_status": "author_unreviewed"}}}
+{"construction": "40 words exactly and at least 60 words cannot both hold", "gold": {"task_feasible": false}, "gold_source": "construction", "item_id": "feas-en-01"}
+{"construction": "four hours of interviews in a two-hour window", "gold": {"task_feasible": false}, "gold_source": "construction", "item_id": "feas-en-02"}
+{"construction": "the paragraph to translate is not supplied", "gold": {"task_feasible": false}, "gold_source": "construction", "item_id": "feas-en-03"}
+{"construction": "consistent single length range", "gold": {"task_feasible": true}, "gold_source": "construction", "item_id": "feas-en-04"}
+{"construction": "two hours of interviews in a two-hour window", "gold": {"task_feasible": true}, "gold_source": "construction", "item_id": "feas-en-05"}
+{"construction": "exactly 100 characters and at least 200 characters cannot both hold", "gold": {"task_feasible": false}, "gold_source": "construction", "item_id": "feas-zh-01"}
+{"construction": "text supplied, ordinary translation", "gold": {"task_feasible": true}, "gold_source": "construction", "item_id": "feas-zh-02"}
+{"construction": "3 x 2,000 x 2 = 12,000 < 30,000 words", "gold": {"task_feasible": false}, "gold_source": "construction", "item_id": "feas-ja-01"}
+{"construction": "3 x 2,000 x 2 = 12,000 >= 10,000 words", "gold": {"task_feasible": true}, "gold_source": "construction", "item_id": "feas-ja-02"}
+{"construction": "text supplied, ordinary translation", "gold": {"task_feasible": true}, "gold_source": "construction", "item_id": "feas-ja-03"}
+{"construction": "nearest approach 1 + 12 = 13 km > 5 km transporter range; rescue requires crossing; the premise that every goal can be met together is false", "gold": {"premise_valid": false, "task_feasible": false}, "gold_source": "construction", "item_id": "km-en-01-no-win"}
+{"construction": "1 + 3 = 4 km <= 5 km transporter range; rescue from our side; the premise that every goal can be met together is true", "gold": {"premise_valid": true, "task_feasible": true}, "gold_source": "construction", "item_id": "km-en-01-near-miss"}
+{"construction": "the same call must return two different values; the premise that every goal can be met together is false", "gold": {"premise_valid": false, "task_feasible": false}, "gold_source": "construction", "item_id": "km-en-02-no-win"}
+{"construction": "a keep_case parameter separates the two calls; the premise that every goal can be met together is true", "gold": {"premise_valid": true, "task_feasible": true}, "gold_source": "construction", "item_id": "km-en-02-near-miss"}
+{"construction": "2 trips x 4 seats = 8 < 9 crew; the premise that every goal can be met together is false", "gold": {"premise_valid": false, "task_feasible": false}, "gold_source": "construction", "item_id": "km-zh-01-no-win"}
+{"construction": "3 trips x 4 seats = 12 >= 9 crew; the premise that every goal can be met together is true", "gold": {"premise_valid": true, "task_feasible": true}, "gold_source": "construction", "item_id": "km-zh-01-near-miss"}
+{"construction": "450 + 350 + 250 = 1,050 > 1,000; the premise that every goal can be met together is false", "gold": {"premise_valid": false, "task_feasible": false}, "gold_source": "construction", "item_id": "km-zh-02-no-win"}
+{"construction": "450 + 350 + 200 = 1,000, which does not exceed 1,000; the premise that every goal can be met together is true", "gold": {"premise_valid": true, "task_feasible": true}, "gold_source": "construction", "item_id": "km-zh-02-near-miss"}
+{"construction": "6 hours of sequential work in a 5-hour window; the premise that every goal can be met together is false", "gold": {"premise_valid": false, "task_feasible": false}, "gold_source": "construction", "item_id": "km-ja-01-no-win"}
+{"construction": "6 hours of sequential work in a 6-hour window; the premise that every goal can be met together is true", "gold": {"premise_valid": true, "task_feasible": true}, "gold_source": "construction", "item_id": "km-ja-01-near-miss"}
+{"construction": "the same call must return two different values; the premise that every goal can be met together is false", "gold": {"premise_valid": false, "task_feasible": false}, "gold_source": "construction", "item_id": "km-ja-02-no-win"}
+{"construction": "rounding half away from zero satisfies both tests; the premise that every goal can be met together is true", "gold": {"premise_valid": true, "task_feasible": true}, "gold_source": "construction", "item_id": "km-ja-02-near-miss"}
+{"construction": "add returns a - b (premise true) or a + b, giving 5 (premise false)", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-en-01-true"}
+{"construction": "add returns a - b (premise true) or a + b, giving 5 (premise false)", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-en-01-false"}
+{"construction": "rosetta_core.sync raises SyncConflict when both sides changed; it never merges", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-en-02-true"}
+{"construction": "rosetta_core.sync raises SyncConflict when both sides changed; it never merges", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-en-02-false"}
+{"construction": "rendered notes either allow a one-week slip or say the deadline is fixed", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-en-03-true"}
+{"construction": "rendered notes either allow a one-week slip or say the deadline is fixed", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-en-03-false"}
+{"construction": "rosetta_core.loader.load_prompt returns the .md text when the packet is invalid and the .md exists", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-en-04-true"}
+{"construction": "rosetta_core.loader.load_prompt returns the .md text when the packet is invalid and the .md exists", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-en-04-false"}
+{"construction": "packet built with max_words=500 (true) or 300 (false)", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-en-05-true"}
+{"construction": "packet built with max_words=500 (true) or 300 (false)", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-en-05-false"}
+{"construction": "is_even uses == 1 (returns False for 4) or == 0 (returns True)", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-zh-01-true"}
+{"construction": "is_even uses == 1 (returns False for 4) or == 0 (returns True)", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-zh-01-false"}
+{"construction": "policy states 30 days (true) or 14 days (false)", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-zh-02-true"}
+{"construction": "policy states 30 days (true) or 14 days (false)", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-zh-02-false"}
+{"construction": "rendered notes ask for US spelling (true) or UK spelling (false)", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-zh-03-true"}
+{"construction": "rendered notes ask for US spelling (true) or UK spelling (false)", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-zh-03-false"}
+{"construction": "max_value returns the last item, 4 (true) or the maximum, 9 (false)", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-ja-01-true"}
+{"construction": "max_value returns the last item, 4 (true) or the maximum, 9 (false)", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-ja-01-false"}
+{"construction": "packet built with language=ja (true) or language=en (false)", "gold": {"premise_valid": true}, "gold_source": "construction", "item_id": "prem-ja-02-true"}
+{"construction": "packet built with language=ja (true) or language=en (false)", "gold": {"premise_valid": false}, "gold_source": "construction", "item_id": "prem-ja-02-false"}
+{"construction": "negation applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-en-01"}
+{"construction": "number applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-en-02"}
+{"construction": "hedge applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-en-03"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-en-04"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-en-05"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-en-06"}
+{"construction": "number applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-en-07"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-en-08"}
+{"construction": "negation applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-zh-01"}
+{"construction": "hedge applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-zh-02"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-zh-03"}
+{"construction": "number applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-zh-04"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-zh-05"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-zh-06"}
+{"construction": "negation applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-ja-01"}
+{"construction": "hedge applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-ja-02"}
+{"construction": "number applied to the original", "gold": {"meaning_changed": true}, "gold_source": "construction", "item_id": "mean-ja-03"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-ja-04"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-ja-05"}
+{"construction": "paraphrase applied to the original (author-written; same meaning)", "gold": {"meaning_changed": false}, "gold_source": "construction", "item_id": "mean-ja-06"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-en-01-supported"}
+{"construction": "number altered", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-en-01-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-en-02-supported"}
+{"construction": "not mentioned", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-en-02-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-en-03-supported"}
+{"construction": "number altered", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-en-03-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-en-04-supported"}
+{"construction": "contradicted", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-en-04-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-zh-01-supported"}
+{"construction": "number altered", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-zh-01-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-zh-02-supported"}
+{"construction": "not mentioned", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-zh-02-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-zh-03-supported"}
+{"construction": "not mentioned", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-zh-03-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-ja-01-supported"}
+{"construction": "number altered", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-ja-01-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-ja-02-supported"}
+{"construction": "contradicted", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-ja-02-unsupported"}
+{"construction": "restates a source fact", "gold": {"output_supported": true}, "gold_source": "construction", "item_id": "sup-ja-03-supported"}
+{"construction": "not mentioned", "gold": {"output_supported": false}, "gold_source": "construction", "item_id": "sup-ja-03-unsupported"}
+{"construction": "notes restate deadline='2026-11-20'", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-en-01-faithful"}
+{"construction": "notes contradict deadline='2026-11-20'", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-en-01-corrupted"}
+{"construction": "notes restate target_language='English (UK)'", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-en-02-faithful"}
+{"construction": "notes contradict target_language='English (UK)'", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-en-02-corrupted"}
+{"construction": "notes restate max_words=300", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-en-03-faithful"}
+{"construction": "notes contradict max_words=300", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-en-03-corrupted"}
+{"construction": "notes restate reference_style='APA 7'", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-en-04-faithful"}
+{"construction": "notes contradict reference_style='APA 7'", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-en-04-corrupted"}
+{"construction": "notes restate deadline='2026-12-01'", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-zh-01-faithful"}
+{"construction": "notes contradict deadline='2026-12-01'", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-zh-01-corrupted"}
+{"construction": "notes restate spelling='英式'", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-zh-02-faithful"}
+{"construction": "notes contradict spelling='英式'", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-zh-02-corrupted"}
+{"construction": "notes restate max_words=200", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-zh-03-faithful"}
+{"construction": "notes contradict max_words=200", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-zh-03-corrupted"}
+{"construction": "notes restate deadline='2026-11-28'", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-ja-01-faithful"}
+{"construction": "notes contradict deadline='2026-11-28'", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-ja-01-corrupted"}
+{"construction": "notes restate style='です・ます調'", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-ja-02-faithful"}
+{"construction": "notes contradict style='です・ます調'", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-ja-02-corrupted"}
+{"construction": "notes restate max_words=150", "gold": {"notes_consistent": true}, "gold_source": "construction", "item_id": "notes-ja-03-faithful"}
+{"construction": "notes contradict max_words=150", "gold": {"notes_consistent": false}, "gold_source": "construction", "item_id": "notes-ja-03-corrupted"}
+{"construction": "same fields, reordered packet lines", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-en-01-equal-reorder"}
+{"construction": "max_words -> 500 in a packet", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-en-01-changed-cpn"}
+{"construction": "same fields, rendered as human doc", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-en-02-equal-md"}
+{"construction": "temperature -> 0.8 in a human doc", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-en-02-changed-md"}
+{"construction": "same fields, rendered as human doc", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-en-03-equal-md"}
+{"construction": "service removed in a packet", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-en-03-changed-cpn"}
+{"construction": "same fields, reordered packet lines", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-en-04-equal-reorder"}
+{"construction": "mode -> 'enforced' in a human doc", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-en-04-changed-md"}
+{"construction": "same fields, rendered as human doc", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-zh-01-equal-md"}
+{"construction": "spelling -> '美式' in a packet", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-zh-01-changed-cpn"}
+{"construction": "same fields, reordered packet lines", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-zh-02-equal-reorder"}
+{"construction": "deadline -> '2026-12-15' in a human doc", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-zh-02-changed-md"}
+{"construction": "same fields, rendered as human doc", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-zh-03-equal-md"}
+{"construction": "threshold -> 0.57 in a packet", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-zh-03-changed-cpn"}
+{"construction": "same fields, reordered packet lines", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-ja-01-equal-reorder"}
+{"construction": "style -> 'だ・である調' in a human doc", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-ja-01-changed-md"}
+{"construction": "same fields, rendered as human doc", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-ja-02-equal-md"}
+{"construction": "service added in a packet", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-ja-02-changed-cpn"}
+{"construction": "same fields, reordered packet lines", "gold": {"views_equivalent": true}, "gold_source": "construction", "item_id": "views-en-05-equal-reorder"}
+{"construction": "max_age_days -> 7 in a packet", "gold": {"views_equivalent": false}, "gold_source": "construction", "item_id": "views-en-05-changed-cpn"}
