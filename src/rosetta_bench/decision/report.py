@@ -40,6 +40,8 @@ def build_decision_report(run_dir: Path) -> str:
         (f"- Cache: {manifest['cache']['hits']} hits, {manifest['cache']['misses']} misses; "
          f"about {manifest['cache']['tokens_avoided']:,} decision input tokens avoided"
          if manifest.get("cache") else "- Cache: off"),
+        (f"- Batching: {manifest['batching']['size']} requests per call (question set {manifest['batching']['call_question_set']['version']}, "
+         "separate calibration needed)" if manifest.get("batching") else "- Batching: off (one request per call)"),
         "- Labels: authored for wiring, not independently reviewed. Smoke cases establish wiring, not performance.",
         "",
         "## Outcomes",

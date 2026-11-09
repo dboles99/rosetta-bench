@@ -25,11 +25,15 @@ class FakeSystemOne:
 
     def __call__(self, request: dict) -> HttpResponse:
         state = request.get("state", {})
-        words = _words(_evidence_text(state))
         routes = state.get("routes", {}) if isinstance(state, dict) else {}
-        best_route_overlap = max((len(words & _words(f"{rid} {desc}")) for rid, desc in routes.items()), default=0)
         answers = {}
         for qid, question in request.get("questions", {}).items():
+            slot = re.search(r"_(r\d+)$", qid)
+            items = state.get("items", {}) if isinstance(state, dict) else {}
+            source = items.get(slot.group(1), {}) if slot and items else state  # batched states hold one item per slot
+            words = _words(_evidence_text(source))
+            best_route_overlap = max((len(words & _words(f"{rid} {desc}")) for rid, desc in routes.items()), default=0)
+            base_qid = qid[: slot.start()] if slot and items else qid
             kind = question.get("type")
             if kind == "choice":
                 options = question.get("criteria", {})
@@ -48,7 +52,7 @@ class FakeSystemOne:
                     "probabilities": [round(1 / n, 6)] * n, "confidence": 0.0,
                 }
             else:
-                p_yes = min(0.95, 0.1 + self.fit_bias + 0.25 * best_route_overlap) if qid == "route_fits" else 0.5
+                p_yes = min(0.95, 0.1 + self.fit_bias + 0.25 * best_route_overlap) if base_qid == "route_fits" else 0.5
                 answers[qid] = {"type": "noul", "noul": round(p_yes, 6)}
         body = {"model": self.model, "answers": answers, "usage": {"input_tokens": len(json.dumps(request).split()), "output_tokens": 0}}
         return HttpResponse(200, {"content-type": "application/json"}, json.dumps(body).encode("utf-8"))

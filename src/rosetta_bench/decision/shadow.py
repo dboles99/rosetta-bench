@@ -15,7 +15,7 @@ import re
 import sys
 import time
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -50,7 +50,7 @@ import rosetta_bench
 from rosetta_bench.pricing import estimate_cost_v2
 from rosetta_bench.provenance import git_state
 
-from .battery import intake_battery
+from .battery import BATCH_VERSION, batched_call_battery, intake_battery, intake_slot_battery
 from .masking import Masker
 from .cache_store import DecisionCache
 from .profiles import ProviderProfile
@@ -186,7 +186,16 @@ def run_shadow(
     cache_path: Path | None = None,
     cache_ttl: timedelta | None = None,
     cache_checked_at: str | None = None,
+    batch_size: int = 1,
 ) -> Path:
+    if batch_size < 1:
+        raise ValueError("batch_size must be at least 1")
+    if batch_size > 1 and cache_path is not None:
+        raise ValueError("batching and the decision cache are not combined yet: in a batch each answer may depend on its "
+                         "neighbours, so batched answers are not cached until a parity test shows they are independent")
+    if batch_size > 1 and 2 * batch_size > profile.max_questions_per_call:
+        raise ValueError(f"{batch_size} requests need {2 * batch_size} questions per call; "
+                         f"{profile.name} allows {profile.max_questions_per_call}")
     routes, cases, corpus_digest = load_routing_corpus(corpus_dir)
     splits_hash = None
     if split is not None:
@@ -230,6 +239,13 @@ def run_shadow(
         "environment": {"python": sys.version.split()[0], "platform": platform.platform()},
         "stopped_early": None,
     }
+    if batch_size > 1:
+        manifest["batching"] = {
+            "size": batch_size,
+            "call_question_set": {"version": BATCH_VERSION},
+            "slot_question_sets": {f"r{i}": intake_slot_battery(routes, f"r{i}").content_hash() for i in range(1, batch_size + 1)},
+            "note": "Batched wording differs from intake 1.1; batched answers need their own calibration.",
+        }
     store = scope = None
     checked_at = None
     if cache_path is not None:
@@ -243,10 +259,8 @@ def run_shadow(
 
     adapter = SystemOneAdapter(profile, transport, model=model, api_key=api_key, max_transport_retries=max_transport_retries)
     forbidden_extra = (api_key,) if api_key else ()
-    for case_id in order:
-        case = by_id[case_id]
-        receipt_id = new_receipt_id()
-        cache_info = {"status": "off", "key": None, "source_receipt_id": None}
+
+    def case_state(case: RoutingCase):
         masker = Masker()
         gates = _gates(case)
         evidence = (Evidence("request.text", masker.mask_value(case.request_text), f"corpus:{case.case_id}", now.isoformat()),)
@@ -260,9 +274,27 @@ def run_shadow(
             )
         except StateRejected as rejected:
             gates = GateResult(gates.eligible_routes, gates.deny_reasons, rejected.missing + rejected.stale + rejected.problems)
+        return masker, gates, state
+
+    prepared = {case_id: case_state(by_id[case_id]) for case_id in order}
+    batched: dict[str, tuple] = {}
+    if batch_size > 1:
+        batched = _ask_in_batches(order, prepared, routes, batch_size, profile, adapter, expected_served,
+                                  writer, forbidden_extra, manifest)
+
+    for case_id in order:
+        case = by_id[case_id]
+        receipt_id = new_receipt_id()
+        cache_info = {"status": "off", "key": None, "source_receipt_id": None}
+        masker, gates, state = prepared[case_id]
+        case_qset, case_policy, batch_info = qset, policy, None
 
         ask = None
-        if not gates.deny_reasons and not gates.missing_evidence and state is not None:
+        if batch_size > 1 and not gates.deny_reasons and not gates.missing_evidence and state is not None:
+            if case_id not in batched:
+                break  # the batch holding this case was never asked (budget reached)
+            ask, case_qset, case_policy, batch_info = batched[case_id]
+        elif not gates.deny_reasons and not gates.missing_evidence and state is not None:
             entry = None
             if store is not None:
                 key = decision_cache_key(state, qset, scope)
@@ -295,8 +327,8 @@ def run_shadow(
                     except ValueError:
                         pass  # wrong served model or invalid answers: never cached
         result = ask.result if ask else None
-        recommendation = reduce(gates, result, policy, qset)
-        violations = [asdict(v) for v in validate_batch(result, qset)] if isinstance(result, AnswerBatch) else []
+        recommendation = reduce(gates, result, case_policy, case_qset)
+        violations = [asdict(v) for v in validate_batch(result, case_qset)] if isinstance(result, AnswerBatch) else []
         decision = {
             "case_id": case.case_id, "category": case.category, "language": case.language,
             "label_fits": case.label_fits, "label_route": case.label_route, "eligible_routes": list(case.eligible_routes),
@@ -309,6 +341,8 @@ def run_shadow(
             "transport_retries": ask.transport_retries if ask else 0, "decision_ms": ask.elapsed_ms if ask else 0.0,
             "tokens_remaining": ask.tokens_remaining if ask else None,
         }
+        if batch_info is not None:
+            decision["batch"] = batch_info
         served = result.served_model if isinstance(result, AnswerBatch) else None
         receipt = {
             "receipt_version": RECEIPT_VERSION, "receipt_id": receipt_id, "run_id": run_id,
@@ -319,11 +353,12 @@ def run_shadow(
             "state": {
                 "schema_version": STATE_SCHEMA_VERSION,
                 "digest": state_digest(state) if state else _sha(case.case_id),
-                "snapshot_ref": f"exchanges.jsonl#{case.case_id}" if ask and ask.exchanges else None,
+                "snapshot_ref": (f"exchanges.jsonl#{batch_info['batch_id']}" if batch_info
+                                 else f"exchanges.jsonl#{case.case_id}" if ask and ask.exchanges else None),
             },
-            "replay": "available" if ask and ask.exchanges else "unavailable",
-            "question_set": {"set_id": qset.set_id, "version": qset.version, "hash": qset.content_hash()},
-            "policy": {"policy_id": policy.policy_id, "version": policy.version, "calibrated": policy.calibrated},
+            "replay": "available" if (ask and ask.exchanges) or batch_info else "unavailable",
+            "question_set": {"set_id": case_qset.set_id, "version": case_qset.version, "hash": case_qset.content_hash()},
+            "policy": {"policy_id": case_policy.policy_id, "version": case_policy.version, "calibrated": case_policy.calibrated},
             "provider": {"name": profile.name, "requested_model": model, "served_model": served,
                          "revision_known": bool(served and served == expected_served
                                                 and (profile.pins_versions or _VERSIONED.search(served)))},
@@ -358,6 +393,64 @@ def run_shadow(
         store.close()
     writer.write_json("manifest.json", manifest)
     return writer.out
+
+
+BATCH_OBJECTIVE = ("For each item in `items`, choose the workflow for its request from the listed routes. "
+                   "Judge every item independently of the others.")
+
+
+def _split_tokens(total: int | None, parts: int) -> list[int | None]:
+    if total is None:
+        return [None] * parts
+    base, remainder = divmod(total, parts)
+    return [base + (1 if i < remainder else 0) for i in range(parts)]
+
+
+def _ask_in_batches(order, prepared, routes, batch_size, profile, adapter, expected_served, writer, forbidden_extra, manifest) -> dict:
+    """One provider call per batch of requests. The route catalogue and instructions are sent once per
+    call instead of once per request; each request's answers are split back out under its slot."""
+    callable_ids = [cid for cid in order
+                    if not prepared[cid][1].deny_reasons and not prepared[cid][1].missing_evidence and prepared[cid][2] is not None]
+    out: dict[str, tuple] = {}
+    for index in range(0, len(callable_ids), batch_size):
+        chunk = callable_ids[index:index + batch_size]
+        slots = [f"r{i}" for i in range(1, len(chunk) + 1)]
+        wires = {slot: wire_state(prepared[cid][2]) for slot, cid in zip(slots, chunk)}
+        state = {
+            "objective": BATCH_OBJECTIVE,
+            "routes": next(iter(wires.values()))["routes"],
+            "items": {slot: {"constraints": wire["constraints"], "evidence": wire["evidence"]} for slot, wire in wires.items()},
+        }
+        batch_id = f"batch{index // batch_size + 1:03d}"
+        try:
+            ask = adapter.ask(state, batched_call_battery(routes, slots), context={"batch_id": batch_id, "case_ids": chunk})
+        except BudgetExceeded as exc:
+            manifest["stopped_early"] = str(exc)
+            break
+        originals = tuple(original for cid in chunk for original in prepared[cid][0].originals)
+        for exchange in ask.exchanges:
+            assert_no_secrets(exchange, forbidden=originals + forbidden_extra)
+            writer.append("exchanges.jsonl", exchange)
+        shares = _split_tokens(ask.input_tokens, len(chunk))
+        for position, (slot, cid) in enumerate(zip(slots, chunk)):
+            slot_qset = intake_slot_battery(routes, slot)
+            slot_policy = placeholder_policy(profile, expected_served, slot_qset)
+            result = ask.result
+            if isinstance(result, AnswerBatch):
+                answers = {}
+                for qid, answer in result.answers.items():
+                    base, _, answer_slot = qid.rpartition("_")
+                    if answer_slot == slot:
+                        answers[base] = replace(answer, qid=base)
+                result = AnswerBatch(result.provider, result.requested_model, result.served_model, answers,
+                                     usage_input_tokens=shares[position])
+            item_ask = AskResult(result=result, calls=ask.calls if position == 0 else 0,
+                                 transport_retries=ask.transport_retries if position == 0 else 0,
+                                 elapsed_ms=ask.elapsed_ms, input_tokens=shares[position], tokens_remaining=ask.tokens_remaining)
+            info = {"batch_id": batch_id, "slot": slot, "size": len(chunk), "call_input_tokens": ask.input_tokens,
+                    "call_ms": ask.elapsed_ms}
+            out[cid] = (item_ask, slot_qset, slot_policy, info)
+    return out
 
 
 @dataclass
@@ -405,7 +498,8 @@ def replay_run(run_dir: Path, profiles: dict | None = None) -> ReplayReport:
             corpus_dir, profile, ReplayTransport(exchanges), Path(tmp) / "replay",
             seed=manifest["seed"], api_key=f"no-key-{uuid.uuid4().hex}" if profile.api_key_env else None,
             state_time=manifest["state_time"], model=manifest["provider"]["requested_model"],
-            max_transport_retries=manifest["max_transport_retries"], split=manifest.get("split"), **cache_kwargs,
+            max_transport_retries=manifest["max_transport_retries"], split=manifest.get("split"),
+            batch_size=(manifest.get("batching") or {}).get("size", 1), **cache_kwargs,
         )
         replayed = {d["case_id"]: d for d in _lines(replayed_dir / "decisions.jsonl")}
     keys = ("outcome", "route", "reason_codes", "signals")
