@@ -1,58 +1,87 @@
-import copy
+import random
+import time
 import unittest
-
-from solution import spiral_order, rotate
-
-M23 = [[1, 2, 3], [4, 5, 6]]
+from solution import longest_calm, count_calm
 
 
-class MatrixTests(unittest.TestCase):
-    def test_spiral_square(self):
-        self.assertEqual(spiral_order([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), [1, 2, 3, 6, 9, 8, 7, 4, 5])
+def brute(values, limit):
+    best, count = (0, 0), 0
+    for i in range(len(values)):
+        for j in range(i, len(values)):
+            window = values[i:j + 1]
+            if max(window) - min(window) <= limit:
+                count += 1
+                if j + 1 - i > best[1] - best[0]:
+                    best = (i, j + 1)
+    return best, count
 
-    def test_spiral_wide_and_tall(self):
-        self.assertEqual(spiral_order([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]), [1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7])
-        self.assertEqual(spiral_order([[1], [2], [3]]), [1, 2, 3])
-        self.assertEqual(spiral_order([[1, 2, 3]]), [1, 2, 3])
-        self.assertEqual(spiral_order([[1, 2], [3, 4], [5, 6], [7, 8]]), [1, 2, 4, 6, 8, 7, 5, 3])
+
+class TestLongestCalm(unittest.TestCase):
+    def test_basic(self):
+        self.assertEqual(longest_calm([1, 3, 2, 8, 9, 8, 7], 2), (3, 7))
+
+    def test_tie_earliest_start(self):
+        self.assertEqual(longest_calm([1, 2, 10, 11], 1), (0, 2))
+
+    def test_limit_zero_runs_of_equal_values(self):
+        self.assertEqual(longest_calm([4, 4, 5, 5, 5, 4], 0), (2, 5))
 
     def test_empty(self):
-        self.assertEqual(spiral_order([]), [])
-        self.assertEqual(spiral_order([[], []]), [])
-        self.assertEqual(rotate([]), [])
-        self.assertEqual(rotate([[], []], 1), [])
+        self.assertEqual(longest_calm([], 3), (0, 0))
+        self.assertEqual(count_calm([], 3), 0)
 
-    def test_ragged_raises(self):
+    def test_single_element_always_calm(self):
+        self.assertEqual(longest_calm([1, 100, 1000], 0), (0, 1))
+
+    def test_floats_and_float_limit(self):
+        self.assertEqual(longest_calm([0.5, 0.75, 1.0, 2.0], 0.5), (0, 3))
+
+    def test_errors(self):
         with self.assertRaises(ValueError):
-            spiral_order([[1, 2], [3]])
+            longest_calm([1, 2], -1)
         with self.assertRaises(ValueError):
-            rotate([[1], [2, 3]])
+            longest_calm([1, float("nan")], 1)
+        with self.assertRaises(ValueError):
+            count_calm([1, 2], float("nan"))
+        with self.assertRaises(TypeError):
+            longest_calm([1, True], 1)
+        with self.assertRaises(ValueError):
+            longest_calm([1], True)
 
-    def test_rotate_clockwise_non_square(self):
-        self.assertEqual(rotate(M23), [[4, 1], [5, 2], [6, 3]])
-        self.assertEqual(rotate(M23, 2), [[6, 5, 4], [3, 2, 1]])
-
-    def test_rotate_negative_is_counter_clockwise(self):
-        self.assertEqual(rotate(M23, -1), [[3, 6], [2, 5], [1, 4]])
-        self.assertEqual(rotate(M23, 3), rotate(M23, -1))
-        self.assertEqual(rotate(M23, 7), rotate(M23, -1))
-
-    def test_rotate_zero_returns_a_copy(self):
-        result = rotate(M23, 0)
-        self.assertEqual(result, M23)
-        self.assertIsNot(result, M23)
-        self.assertIsNot(result[0], M23[0])
-        result[0][0] = 99
-        self.assertEqual(M23[0][0], 1)
-
-    def test_inputs_not_mutated(self):
-        matrix = [[1, 2], [3, 4], [5, 6]]
-        before = copy.deepcopy(matrix)
-        spiral_order(matrix)
-        rotate(matrix, 1)
-        rotate(matrix, 4)
-        self.assertEqual(matrix, before)
+    def test_input_not_mutated(self):
+        values = [3, 1, 2]
+        longest_calm(values, 1)
+        count_calm(values, 1)
+        self.assertEqual(values, [3, 1, 2])
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestCountCalm(unittest.TestCase):
+    def test_basic(self):
+        self.assertEqual(count_calm([1, 3, 2], 1), 4)
+
+    def test_all_equal(self):
+        self.assertEqual(count_calm([2, 2, 2, 2], 0), 10)
+
+    def test_random_against_brute(self):
+        rng = random.Random(8)
+        for _ in range(300):
+            values = [rng.randint(-5, 5) for _ in range(rng.randint(0, 14))]
+            limit = rng.randint(0, 6)
+            best, count = brute(values, limit)
+            self.assertEqual(longest_calm(values, limit), best)
+            self.assertEqual(count_calm(values, limit), count)
+
+
+class TestPerformance(unittest.TestCase):
+    def test_large(self):
+        rng = random.Random(3)
+        values = [rng.randint(0, 1000) for _ in range(200000)]
+        values[50000:150000] = [500 + (i % 7) for i in range(100000)]
+        started = time.perf_counter()
+        best = longest_calm(values, 10)
+        count = count_calm(values, 10)
+        elapsed = time.perf_counter() - started
+        self.assertLessEqual(best[0], 50000)
+        self.assertGreaterEqual(best[1], 150000)
+        self.assertGreater(count, 5 * 10**9)
+        self.assertLess(elapsed, 4.0)

@@ -221,7 +221,7 @@ def test_report_breaks_results_down_by_kind_refusal_premise_and_no_win(tmp_path)
     out = _matrix(tmp_path, generator)
     rows = _lines(out / "trials.jsonl")
     m = arm_metrics(rows)
-    assert m["by_kind"]["code"] == {"successes": 30, "n": 31}
+    assert m["by_kind"]["code"] == {"successes": 32, "n": 33}
     assert m["false_refusals"] == 1
     assert m["unsolvable"] == {"honest": 4, "attempted_code": 0, "other": 0}
     assert m["kobayashi"] == {"honest_unsolvable": 3, "honest_premise": 0, "failed": 0, "cheated": 1, "other": 0, "flagged": 1}

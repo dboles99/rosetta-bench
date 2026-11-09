@@ -1,57 +1,89 @@
+import itertools
+import random
+import time
 import unittest
-
-from solution import allocate, allocate_amount
-
-
-class TestAllocate(unittest.TestCase):
-    def test_equal_split_goes_to_lower_index(self):
-        self.assertEqual(allocate(100, [1, 1, 1]), [34, 33, 33])
-
-    def test_largest_remainder_first(self):
-        self.assertEqual(allocate(5, [1, 2]), [2, 3])
-        self.assertEqual(allocate(7, [2, 3, 5]), [1, 2, 4])
-
-    def test_equal_remainder_goes_to_larger_ratio(self):
-        self.assertEqual(allocate(2, [1, 3]), [0, 2])
-
-    def test_equal_remainder_and_ratio_goes_to_lower_index(self):
-        self.assertEqual(allocate(1, [1, 2, 1, 2]), [0, 1, 0, 0])
-        self.assertEqual(allocate(1001, [3, 3, 3, 1]), [301, 300, 300, 100])
-
-    def test_zero_ratio_gets_nothing(self):
-        self.assertEqual(allocate(10, [0, 1, 1]), [0, 5, 5])
-        self.assertEqual(allocate(1, [0, 1]), [0, 1])
-
-    def test_zero_total(self):
-        self.assertEqual(allocate(0, [1, 2]), [0, 0])
-
-    def test_sum_is_preserved(self):
-        for total, ratios in ((997, [7, 11, 13]), (12345, [1, 2, 3, 4, 5]), (3, [5, 5, 5, 5])):
-            self.assertEqual(sum(allocate(total, ratios)), total)
-
-    def test_invalid_input(self):
-        for total, ratios in ((-1, [1]), (10, []), (10, [1, -1]), (10, [0, 0]), (10, [1.5]), (10, [True]),
-                              (10.0, [1]), (True, [1])):
-            with self.assertRaises(ValueError, msg=(total, ratios)):
-                allocate(total, ratios)
-
-    def test_input_not_modified(self):
-        ratios = [1, 2]
-        allocate(5, ratios)
-        self.assertEqual(ratios, [1, 2])
+from solution import best_schedule, max_parallel
 
 
-class TestAllocateAmount(unittest.TestCase):
-    def test_formats_two_decimals(self):
-        self.assertEqual(allocate_amount("10.00", [1, 1, 1]), ["3.34", "3.33", "3.33"])
-        self.assertEqual(allocate_amount("0.05", [1, 2]), ["0.02", "0.03"])
-        self.assertEqual(allocate_amount("100.00", [1, 0]), ["100.00", "0.00"])
+def brute(intervals):
+    best = (0, 0)
+    for r in range(1, len(intervals) + 1):
+        for combo in itertools.combinations(intervals, r):
+            ordered = sorted(combo)
+            if all(a[1] <= b[0] for a, b in zip(ordered, ordered[1:])):
+                total = sum(c[2] for c in combo)
+                if (total, -r) > (best[0], -best[1]):
+                    best = (total, r)
+    return best
 
-    def test_invalid_amounts(self):
-        for bad in ("10", "10.0", "10.000", "-1.00", "1,00", " 1.00", "１.00", ".50", "1.00 "):
-            with self.assertRaises(ValueError, msg=repr(bad)):
-                allocate_amount(bad, [1])
+
+class TestBestSchedule(unittest.TestCase):
+    def test_basic(self):
+        self.assertEqual(best_schedule([(1, 3, 5), (2, 5, 6), (4, 6, 5), (6, 7, 4)]), (14, 3))
+
+    def test_touching_allowed(self):
+        self.assertEqual(best_schedule([(0, 2, 1), (2, 4, 1)]), (2, 2))
+
+    def test_fewest_intervals_on_tie(self):
+        self.assertEqual(best_schedule([(0, 1, 2), (1, 2, 2), (0, 2, 4)]), (4, 1))
+
+    def test_zero_and_negative_weights_never_chosen(self):
+        self.assertEqual(best_schedule([(0, 1, 0), (2, 3, -4), (5, 6, 3)]), (3, 1))
+        self.assertEqual(best_schedule([(0, 1, -1)]), (0, 0))
+
+    def test_empty(self):
+        self.assertEqual(best_schedule([]), (0, 0))
+        self.assertEqual(max_parallel([]), 0)
+
+    def test_errors(self):
+        with self.assertRaises(ValueError):
+            best_schedule([(3, 3, 1)])
+        with self.assertRaises(ValueError):
+            max_parallel([(5, 1, 1)])
+        with self.assertRaises(TypeError):
+            best_schedule([(0, 1, True)])
+        with self.assertRaises(TypeError):
+            best_schedule([(0, 1.5, 1)])
+
+    def test_input_not_mutated(self):
+        intervals = [(5, 6, 1), (0, 1, 1)]
+        best_schedule(intervals)
+        max_parallel(intervals)
+        self.assertEqual(intervals, [(5, 6, 1), (0, 1, 1)])
+
+    def test_random_against_brute(self):
+        rng = random.Random(17)
+        for _ in range(250):
+            intervals = []
+            for _ in range(rng.randint(0, 8)):
+                s = rng.randint(0, 10)
+                intervals.append((s, s + rng.randint(1, 4), rng.randint(-2, 5)))
+            self.assertEqual(best_schedule(intervals), brute(intervals))
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestMaxParallel(unittest.TestCase):
+    def test_touching_is_not_parallel(self):
+        self.assertEqual(max_parallel([(0, 2, 1), (2, 4, 1), (4, 6, 1)]), 1)
+
+    def test_nested(self):
+        self.assertEqual(max_parallel([(0, 10, 1), (1, 9, 1), (2, 3, 1), (3, 4, 1)]), 3)
+
+    def test_weights_ignored(self):
+        self.assertEqual(max_parallel([(0, 5, -3), (1, 2, 0)]), 2)
+
+
+class TestPerformance(unittest.TestCase):
+    def test_large(self):
+        rng = random.Random(18)
+        intervals = []
+        for _ in range(100000):
+            s = rng.randint(0, 10**7)
+            intervals.append((s, s + rng.randint(1, 5000), rng.randint(1, 100)))
+        started = time.perf_counter()
+        total, count = best_schedule(intervals)
+        peak = max_parallel(intervals)
+        elapsed = time.perf_counter() - started
+        self.assertGreater(total, 0)
+        self.assertGreater(count, 0)
+        self.assertGreater(peak, 1)
+        self.assertLess(elapsed, 4.0)

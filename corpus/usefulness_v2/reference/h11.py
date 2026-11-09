@@ -1,36 +1,39 @@
-_DIGITS = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
-_CHECK = _DIGITS + "*~$=U"
-_ALIASES = {"I": "1", "L": "1", "O": "0"}
+import heapq
 
 
-def encode_id(n):
-    if isinstance(n, bool) or not isinstance(n, int):
-        raise TypeError("n must be an int")
-    if n < 0:
-        raise ValueError("n must be non-negative")
-    digits = []
-    value = n
-    while True:
-        value, rem = divmod(value, 32)
-        digits.append(_DIGITS[rem])
-        if value == 0:
-            break
-    return "".join(reversed(digits)) + _CHECK[n % 37]
-
-
-def decode_id(s):
-    cleaned = [_ALIASES.get(ch, ch) for ch in s.replace("-", "").upper()]
-    if len(cleaned) < 2:
-        raise ValueError("too short")
-    *body, check = cleaned
-    value = 0
-    for ch in body:
-        index = _DIGITS.find(ch)
-        if index < 0:
-            raise ValueError(f"invalid symbol {ch!r}")
-        value = value * 32 + index
-    if check not in _CHECK:
-        raise ValueError(f"invalid check symbol {check!r}")
-    if _CHECK.index(check) != value % 37:
-        raise ValueError("checksum mismatch")
+def _int(value, name):
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{name} must be int")
     return value
+
+
+def schedule(tasks):
+    for enqueue, duration, priority in tasks:
+        if _int(enqueue, "enqueue") < 0:
+            raise ValueError("enqueue must be >= 0")
+        if _int(duration, "duration") < 0:
+            raise ValueError("duration must be >= 0")
+        _int(priority, "priority")
+    order = sorted(range(len(tasks)), key=lambda i: (tasks[i][0], i))
+    ready = []
+    result = []
+    time = 0
+    pos = 0
+    while pos < len(order) or ready:
+        if not ready and pos < len(order) and tasks[order[pos]][0] > time:
+            time = tasks[order[pos]][0]
+        while pos < len(order) and tasks[order[pos]][0] <= time:
+            i = order[pos]
+            heapq.heappush(ready, (-tasks[i][2], tasks[i][1], i))
+            pos += 1
+        _, duration, i = heapq.heappop(ready)
+        result.append((i, time, time + duration))
+        time += duration
+    return result
+
+
+def waiting_times(tasks):
+    waits = [0] * len(tasks)
+    for i, start, _ in schedule(tasks):
+        waits[i] = start - tasks[i][0]
+    return waits

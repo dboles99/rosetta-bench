@@ -90,13 +90,20 @@ def contains_code(text: str | None) -> bool:
 _LIST_ITEM = re.compile(r"^\s*(?:[-*•+]|\d+[.)、]|[（(]\d+[)）])\s+")
 
 
+_REQUEST = re.compile(r"教えて|ください|下さい|いただけ|頂け|请|請|吗|嗎|\bplease\b|\bcould you\b|\bcan you\b|\bwould you\b", re.IGNORECASE)
+
+
 def count_questions(text: str | None) -> int:
-    """A list item that asks something counts as one question (even with two question marks);
-    elsewhere every run of question marks counts."""
+    """A list item that asks something counts as one question: it has a question mark (one or
+    more) or is phrased as a request ("…を教えてください。", "请提供…", "Please share …").
+    Elsewhere every run of question marks counts."""
     total = 0
     for line in (text or "").splitlines():
         marks = len(re.findall(r"[?？]+", line))
-        total += min(marks, 1) if _LIST_ITEM.match(line) else marks
+        if _LIST_ITEM.match(line):
+            total += 1 if marks or _REQUEST.search(line) else 0
+        else:
+            total += marks
     return total
 
 
