@@ -93,6 +93,26 @@ def test_a_valid_reply_is_normalised():
     assert validate_batch(batch, QSET) == []
 
 
+def test_clef_style_score_probabilities_keyed_by_legend_are_mapped_through_the_legend():
+    # shape observed live from clef via Ollama on 2026-11-09 (0-based legend, probabilities keyed by legend key)
+    reply = json.loads(json.dumps(GOOD_REPLY))
+    reply["answers"]["effort"] = {"type": "score", "score": 1.8, "confidence": 0.55,
+                                  "legend": {"0": "low", "1": "medium", "2": "high"},
+                                  "probabilities": {"2": 0.8, "0": 0.05, "1": 0.15}}
+    batch = _adapter([_ok(reply)])[0].ask(STATE, QSET).result
+    assert batch.answers["effort"].position == pytest.approx(1.8)
+    assert batch.answers["effort"].probabilities == (0.05, 0.15, 0.8)
+    assert validate_batch(batch, QSET) == []
+
+
+def test_score_probabilities_keyed_by_unknown_legend_keys_are_dropped():
+    reply = json.loads(json.dumps(GOOD_REPLY))
+    reply["answers"]["effort"] = {"type": "score", "score": 1.0, "legend": {"0": "low", "1": "medium", "2": "high"},
+                                  "probabilities": {"0": 0.5, "1": 0.5, "7": 0.0}}
+    batch = _adapter([_ok(reply)])[0].ask(STATE, QSET).result
+    assert batch.answers["effort"].probabilities is None
+
+
 def test_a_score_without_a_legend_is_left_unmapped_not_guessed():
     reply = json.loads(json.dumps(GOOD_REPLY))
     reply["answers"]["effort"] = {"type": "score", "score": 2.0, "confidence": 0.7}
