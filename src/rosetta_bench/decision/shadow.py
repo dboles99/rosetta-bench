@@ -50,7 +50,7 @@ import rosetta_bench
 from rosetta_bench.pricing import estimate_cost_v2
 from rosetta_bench.provenance import git_state
 
-from .battery import BATCH_VERSION, batched_call_battery, intake_battery, intake_slot_battery
+from .battery import BATCH_VERSION, batched_call_battery, intake_battery, intake_battery_compact, intake_slot_battery
 from .masking import Masker
 from .cache_store import DecisionCache
 from .profiles import ProviderProfile
@@ -187,7 +187,10 @@ def run_shadow(
     cache_ttl: timedelta | None = None,
     cache_checked_at: str | None = None,
     batch_size: int = 1,
+    compact: bool = False,
 ) -> Path:
+    if compact and batch_size > 1:
+        raise ValueError("compact wording and batching are separate experiments; choose one")
     if batch_size < 1:
         raise ValueError("batch_size must be at least 1")
     if batch_size > 1 and cache_path is not None:
@@ -206,7 +209,7 @@ def run_shadow(
             raise ValueError(f"no cases in split {split!r}")
     model = model or profile.default_model
     expected_served = profile.expected_served_model or model
-    qset = intake_battery(routes)
+    qset = intake_battery_compact(routes) if compact else intake_battery(routes)
     policy = placeholder_policy(profile, expected_served, qset)
     route_refs = {r["id"]: RouteRef(r["id"], r["description"], _sha(canonical_json(r))) for r in routes}
     now = datetime.fromisoformat(state_time) if state_time else datetime.now(timezone.utc).replace(microsecond=0)
@@ -225,6 +228,7 @@ def run_shadow(
         "corpus_digest": corpus_digest,
         "split": split,
         "splits_hash": splits_hash,
+        "state_format": "compact" if compact else "full",
         "provider": {"profile": profile.name, "endpoint": profile.endpoint, "requested_model": model,
                      "expected_served_model": expected_served, "notes": profile.notes},
         "synthetic": profile.name == "fake",
@@ -499,7 +503,8 @@ def replay_run(run_dir: Path, profiles: dict | None = None) -> ReplayReport:
             seed=manifest["seed"], api_key=f"no-key-{uuid.uuid4().hex}" if profile.api_key_env else None,
             state_time=manifest["state_time"], model=manifest["provider"]["requested_model"],
             max_transport_retries=manifest["max_transport_retries"], split=manifest.get("split"),
-            batch_size=(manifest.get("batching") or {}).get("size", 1), **cache_kwargs,
+            batch_size=(manifest.get("batching") or {}).get("size", 1),
+            compact=manifest.get("state_format") == "compact", **cache_kwargs,
         )
         replayed = {d["case_id"]: d for d in _lines(replayed_dir / "decisions.jsonl")}
     keys = ("outcome", "route", "reason_codes", "signals")

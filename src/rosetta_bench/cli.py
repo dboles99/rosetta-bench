@@ -141,7 +141,7 @@ def _decision_command(args) -> int:
     run_shadow(Path(args.corpus), profile, transport, out, seed=args.seed, api_key=key,
                live=profile.name != "fake", split=args.split,
                cache_path=Path(args.cache) if getattr(args, "cache", None) else None,
-               batch_size=getattr(args, "batch_size", 1))
+               batch_size=getattr(args, "batch_size", 1), compact=getattr(args, "compact", False))
     print(f"wrote {out}")
     return 0
 
@@ -306,6 +306,7 @@ def main(argv: list[str] | None = None) -> int:
         sub.add_argument("--split", choices=("calibration", "held_out"), default=None)
         sub.add_argument("--cache", default=None, help="SQLite file for the Rosetta canonical decision cache (off if omitted)")
         sub.add_argument("--batch-size", type=int, default=1, help="requests per provider call (shares the fixed instructions)")
+        sub.add_argument("--compact", action="store_true", help="intake 1.2: route list sent once, shorter questions")
     for name in ("replay", "report"):
         decision_subparsers.add_parser(name).add_argument("--run", required=True)
 
