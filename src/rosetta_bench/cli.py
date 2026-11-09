@@ -90,6 +90,24 @@ def _decision_transport(args, profile):
 def _decision_command(args) -> int:
     from rosetta_bench.decision.profiles import PROFILES
 
+    if args.decision_command == "calibrate":
+        from rosetta_bench.calibration import calibrate, render_calibration
+
+        result = calibrate([Path(r) for r in args.run], args.question, args.alpha, args.delta, seed=args.seed)
+        Path(args.out).write_text(render_calibration(result), encoding="utf-8", newline="\n")
+        Path(args.out).with_suffix(".json").write_text(json.dumps(result, indent=2), encoding="utf-8", newline="\n")
+        print(f"wrote {args.out}: yes at p >= {result['thresholds']['t_yes']}, no at p <= {result['thresholds']['t_no']}")
+        return 0
+    if args.decision_command == "ensemble":
+        from rosetta_bench.decision.paraphrase import analyse, render_ensemble
+
+        result = analyse(Path(args.run))
+        Path(args.out).write_text(render_ensemble(result), encoding="utf-8", newline="\n")
+        Path(args.out).with_suffix(".json").write_text(json.dumps(result, indent=2), encoding="utf-8", newline="\n")
+        overall = result["overall"]
+        print(f"wrote {args.out}: {overall['n']} answers, single acc {overall['single']['accuracy']:.2f}, "
+              f"ensemble acc {overall['ensemble']['accuracy']:.2f}")
+        return 0
     if args.decision_command in ("replay", "report"):
         from rosetta_bench.decision.evaluate import is_eval_run
 
@@ -132,7 +150,7 @@ def _decision_command(args) -> int:
 
         items = [i for i in args.items.split(",") if i] if args.items else None
         run_eval(Path(args.corpus), profile, transport, out, seed=args.seed, api_key=key,
-                 live=profile.name not in ("fake", "fake-b"), item_ids=items)
+                 live=profile.name not in ("fake", "fake-b"), item_ids=items, paraphrase=args.paraphrase)
         print(f"wrote {out}")
         return 0
 
@@ -166,6 +184,22 @@ def _usefulness_command(args) -> int:
         from rosetta_bench.usefulness.report import write_usefulness_report
 
         print(f"wrote {write_usefulness_report(Path(args.run))}")
+        return 0
+    if args.usefulness_command == "compare":
+        from rosetta_bench.usefulness.replicates import compare_arms, render_comparison
+
+        groups = {}
+        for spec in args.arm:
+            label, _, dirs = spec.partition("=")
+            groups[label] = [Path(d) for d in dirs.split(",") if d]
+        try:
+            result = compare_arms(groups, n_boot=args.boot, seed=args.seed)
+        except ValueError as exc:
+            print(f"not compared: {exc}", file=sys.stderr)
+            return 2
+        Path(args.out).write_text(render_comparison(result), encoding="utf-8", newline="\n")
+        Path(args.out).with_suffix(".json").write_text(json.dumps(result, indent=2), encoding="utf-8", newline="\n")
+        print(f"wrote {args.out}")
         return 0
 
     from rosetta_bench.decision.fake_provider import FakeSystemOne
@@ -310,11 +344,22 @@ def main(argv: list[str] | None = None) -> int:
 
     decision_parser = subparsers.add_parser("decision")
     decision_subparsers = decision_parser.add_subparsers(dest="decision_command", required=True)
+    calibrate_parser = decision_subparsers.add_parser("calibrate", help="fit abstention thresholds with a risk bound per direction")
+    calibrate_parser.add_argument("--run", action="append", required=True, help="decision-eval run folder (repeatable)")
+    calibrate_parser.add_argument("--question", required=True)
+    calibrate_parser.add_argument("--alpha", type=float, default=0.1, help="maximum false-pass / over-refusal rate")
+    calibrate_parser.add_argument("--delta", type=float, default=0.1, help="allowed probability that the bound fails")
+    calibrate_parser.add_argument("--seed", type=int, default=0)
+    calibrate_parser.add_argument("--out", required=True)
+    ensemble_parser = decision_subparsers.add_parser("ensemble", help="analyse a --paraphrase decision-eval run")
+    ensemble_parser.add_argument("--run", required=True)
+    ensemble_parser.add_argument("--out", required=True)
     for name in ("run", "probe", "eval"):
         sub = decision_subparsers.add_parser(name)
         sub.add_argument("--corpus", default="corpus/decision_v1" if name == "eval" else "corpus/routing_smoke")
         if name == "eval":
             sub.add_argument("--items", default=None, help="comma-separated item ids (default: every item)")
+            sub.add_argument("--paraphrase", action="store_true", help="ask each yes/no question in 3 wordings")
         sub.add_argument("--provider", required=True)
         sub.add_argument("--out", required=True)
         sub.add_argument("--live", action="store_true", help="confirm that this run may call a network provider")
@@ -347,6 +392,11 @@ def main(argv: list[str] | None = None) -> int:
     useful_run.add_argument("--seed", type=int, default=20261109)
     useful_run.add_argument("--out", required=True)
     usefulness_subparsers.add_parser("report").add_argument("--run", required=True)
+    compare_parser = usefulness_subparsers.add_parser("compare", help="pool repeated runs per arm and compare arms paired by task")
+    compare_parser.add_argument("--arm", action="append", required=True, help="LABEL=run_dir[,run_dir...] (repeat per arm)")
+    compare_parser.add_argument("--out", required=True)
+    compare_parser.add_argument("--boot", type=int, default=10_000)
+    compare_parser.add_argument("--seed", type=int, default=0)
 
     results_parser = subparsers.add_parser("results")
     results_subparsers = results_parser.add_subparsers(dest="results_command", required=True)

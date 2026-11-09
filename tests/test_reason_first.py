@@ -107,3 +107,14 @@ def test_ollama_client_sends_think_and_reports_reasoning_size(monkeypatch):
 
 def test_run_result_meta_defaults_to_empty():
     assert RunResult("x", 1, 1, 1.0).meta == {}
+
+
+def test_the_planner_can_ask_for_clarification_and_the_plan_schema_is_versioned():
+    from rosetta_bench.usefulness.reason_first import HANDOFF_VERDICTS, PLAN_SCHEMA_VER, REFUSING_VERDICTS
+
+    assert PLAN_SCHEMA_VER == "1.1" and f"SCHEMA_VER={PLAN_SCHEMA_VER}" in PLANNER_PROMPT
+    assert "NEEDS_CLARIFICATION" in PLANNER_PROMPT and set(HANDOFF_VERDICTS) == {"NOT_A_CODE_TASK", "NEEDS_CLARIFICATION"}
+    assert set(REFUSING_VERDICTS) == {"UNSOLVABLE", "PREMISE_REJECTED", "REPORT_DEFECT"}
+    plan = parse_plan("SCHEMA_VER=1.1\nVERDICT=NEEDS_CLARIFICATION\nENTRY_POINT=none\nSIGNATURE=none\nSTEPS=1 ask\n"
+                      "EDGE_CASES=none\nREASON=the rules discussed earlier are not given\n")
+    assert plan.verdict == "NEEDS_CLARIFICATION"

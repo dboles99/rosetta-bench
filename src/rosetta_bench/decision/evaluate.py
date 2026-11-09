@@ -48,6 +48,7 @@ from rosetta_bench.pricing import estimate_cost_v2
 from rosetta_bench.provenance import git_state
 
 from .masking import Masker
+from .paraphrase import base_qid, paraphrased_sets
 from .profiles import ProviderProfile
 from .questions import QUESTION_SETS, question_set_hashes
 from .systemone import SystemOneAdapter
@@ -122,7 +123,7 @@ def _judge(item: EvalItem, qset, result) -> tuple[dict, list[dict]]:
     bad = {v["qid"] for v in violations}
     judged: dict = {}
     for question in qset.questions:
-        qid, gold = question.qid, item.gold[question.qid]
+        qid, gold = question.qid, item.gold[base_qid(question.qid)]
         entry: dict = {"primitive": question.primitive.value, "gold": gold}
         answer = result.answers.get(qid) if isinstance(result, AnswerBatch) else None
         if answer is None or qid in bad:
@@ -195,8 +196,10 @@ def run_eval(
     model: str | None = None,
     max_transport_retries: int = 2,
     item_ids: list[str] | None = None,
+    paraphrase: bool = False,
 ) -> Path:
     items, corpus_digest = load_eval_corpus(corpus_dir)
+    sets = paraphrased_sets() if paraphrase else QUESTION_SETS
     if item_ids is not None:
         unknown = sorted(set(item_ids) - {item.item_id for item in items})
         if unknown:
@@ -219,6 +222,7 @@ def run_eval(
         "corpus_dir": str(Path(corpus_dir).resolve()),
         "corpus_digest": corpus_digest,
         "item_filter": sorted(item_ids) if item_ids is not None else None,
+        "paraphrase": paraphrase,
         "provider": {"profile": profile.name, "endpoint": profile.endpoint, "requested_model": model,
                      "expected_served_model": expected_served, "notes": profile.notes},
         "synthetic": profile.name.startswith("fake"),
@@ -227,7 +231,7 @@ def run_eval(
         "order": order,
         "state_time": now.isoformat(),
         "question_sets": {name: {"set_id": q.set_id, "version": q.version, "hash": q.content_hash(), "qids": list(q.qids)}
-                          for name, q in QUESTION_SETS.items()},
+                          for name, q in sets.items()},
         "policy": {**POLICY, "thresholds": THRESHOLDS},
         "max_transport_retries": max_transport_retries,
         "repos": repos,
@@ -240,7 +244,7 @@ def run_eval(
     forbidden_extra = (api_key,) if api_key else ()
     for item_id in order:
         item = by_id[item_id]
-        qset = QUESTION_SETS[item.qset]
+        qset = sets[item.qset]
         masker = Masker()
         evidence = tuple(Evidence(key, masker.mask_value(value), f"corpus:{item.item_id}", now.isoformat())
                          for key, value in item.evidence.items())
@@ -360,6 +364,7 @@ def replay_eval(run_dir: Path, profiles: dict | None = None) -> EvalReplayReport
             api_key=f"no-key-{uuid.uuid4().hex}" if profile.api_key_env else None, state_time=manifest["state_time"],
             model=manifest["provider"]["requested_model"], max_transport_retries=manifest["max_transport_retries"],
             item_ids=[item_id for item_id in manifest["order"] if item_id in original],
+            paraphrase=manifest.get("paraphrase", False),
         )
         replayed = {d["item_id"]: d for d in _lines(replayed_dir / "decisions.jsonl")}
     mismatches = sorted(item_id for item_id, decision in original.items()

@@ -63,7 +63,7 @@ from rosetta_bench.provenance import git_state
 
 from .corpus import REPRESENTATIONS, UsefulnessTask, corpus_config, corpus_digest, load_tasks, route_contract, route_ids
 from .extract import extract_code, says_not_applicable
-from .reason_first import PLANNER_PROMPT, PlanError, execution_prompt, non_proceed_output, parse_plan
+from .reason_first import HANDOFF_VERDICTS, PLAN_SCHEMA_VER, PLANNER_PROMPT, PlanError, execution_prompt, non_proceed_output, parse_plan
 from .verify import VerifyContext, verify
 
 BASELINE_ROUTE = "code_change"
@@ -371,19 +371,20 @@ def _reason_first(ctx, task: UsefulnessTask, record: dict, timings: dict, execut
         return None
     try:
         plan = parse_plan(planned["output"])
-        record["plan"] = {"verdict": plan.verdict, "digest": plan.digest, "error": None}
+        record["plan"] = {"verdict": plan.verdict, "digest": plan.digest, "error": None,
+                          "handoff": plan.verdict in HANDOFF_VERDICTS}
     except PlanError as exc:
         plan = None
         record["plan"] = {"verdict": None, "digest": None, "error": str(exc)[:200]}
-    if plan is not None and plan.verdict != "PROCEED":
+    if plan is not None and plan.verdict not in ("PROCEED", *HANDOFF_VERDICTS):
         record["generated"] = True
         record["executor_tokens_in"] = record["executor_tokens_out"] = 0
         return non_proceed_output(plan)
 
     contract = route_contract(ctx.corpus_dir, record["route"], "M")
-    if plan is not None:
+    if plan is not None and plan.verdict == "PROCEED":
         prompt, follow = execution_prompt(contract, plan, task.request_text), Task(name=task.task_id, instructions="Follow the plan above.")
-    else:  # unusable plan: execute without one, and record that the plan failed
+    else:  # hand-off verdict or unusable plan: execute the route contract alone, as the M arm does
         prompt, follow = contract, request
     executed = _generate(generations, executor, "executor", prompt, follow)
     timings["generation"] = executed["ms"]
@@ -416,8 +417,9 @@ class FakePlanner:
             terms = [group[0] if isinstance(group, list) else group
                      for group in item.check.get("conflict_terms", []) + item.check.get("mentions", [])]
             reason = ("conflicting requirements: " + ", ".join(terms)) if terms else "see request"
-            verdict = {"unsolvable": "UNSOLVABLE", "false_premise": "PREMISE_REJECTED", "no_code": "NOT_A_CODE_TASK"}.get(item.kind, "PROCEED")
-            text = (f"SCHEMA_VER=1.0\nVERDICT={verdict}\nENTRY_POINT={item.entry_point or 'none'}\nSIGNATURE=none\n"
+            verdict = {"unsolvable": "UNSOLVABLE", "false_premise": "PREMISE_REJECTED", "defect": "REPORT_DEFECT",
+                       "clarify": "NEEDS_CLARIFICATION"}.get(item.kind, "PROCEED" if item.kind == "code" else "NOT_A_CODE_TASK")
+            text = (f"SCHEMA_VER={PLAN_SCHEMA_VER}\nVERDICT={verdict}\nENTRY_POINT={item.entry_point or 'none'}\nSIGNATURE=none\n"
                     f"STEPS=1 read the request | 2 implement it\nEDGE_CASES=none\nREASON={'none' if verdict == 'PROCEED' else reason}\n")
         return RunResult(raw_output=text, tokens_in=len(prompt_text.split()), tokens_out=len(text.split()), latency_ms=0.0,
                          meta={"estimated_reasoning_tokens": 50})
