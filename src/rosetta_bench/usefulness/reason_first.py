@@ -18,7 +18,7 @@ from rosetta_core.hashing import sha256_text
 from rosetta_core.schema import SchemaValidationError, validate_fields
 
 PLAN_SCHEMA_VER = "1.0"
-VERDICTS = ("PROCEED", "UNSOLVABLE", "PREMISE_REJECTED", "NOT_A_CODE_TASK")
+VERDICTS = ("PROCEED", "UNSOLVABLE", "PREMISE_REJECTED", "REPORT_DEFECT", "NOT_A_CODE_TASK")
 PLAN_FIELDS = ("VERDICT", "ENTRY_POINT", "SIGNATURE", "STEPS", "EDGE_CASES", "REASON")
 PLAN_SCHEMA = {
     "type": "object",
@@ -35,14 +35,15 @@ PLAN_SCHEMA = {
 }
 PLANNER_PROMPT = """You are the planning stage. Think the request through, then reply with ONLY these lines, one per line:
 SCHEMA_VER=1.0
-VERDICT=<PROCEED | UNSOLVABLE | PREMISE_REJECTED | NOT_A_CODE_TASK>
+VERDICT=<PROCEED | UNSOLVABLE | PREMISE_REJECTED | REPORT_DEFECT | NOT_A_CODE_TASK>
 ENTRY_POINT=<function or class name to implement, or none>
 SIGNATURE=<Python signature, or none>
 STEPS=<numbered steps separated by ' | '>
 EDGE_CASES=<edge cases separated by ' | ', or none>
 REASON=<one line: why, required for any verdict other than PROCEED; otherwise none>
 Use UNSOLVABLE when the requirements contradict each other or cannot all be met, PREMISE_REJECTED when the request
-relies on something the supplied evidence shows is false, NOT_A_CODE_TASK when it is not a request this route handles.
+relies on something the supplied evidence shows is false, REPORT_DEFECT when the request's own specification,
+examples or tests contain a mistake, NOT_A_CODE_TASK when it is not a request this route handles.
 Do not write code. Keep every value on a single line.
 """
 _LINE = re.compile(r"^\s*([A-Z_]+)\s*=\s*(.*?)\s*$")

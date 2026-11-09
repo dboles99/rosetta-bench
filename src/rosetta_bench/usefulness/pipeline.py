@@ -416,7 +416,8 @@ class FakePlanner:
             terms = [group[0] if isinstance(group, list) else group
                      for group in item.check.get("conflict_terms", []) + item.check.get("mentions", [])]
             reason = ("conflicting requirements: " + ", ".join(terms)) if terms else "see request"
-            verdict = {"unsolvable": "UNSOLVABLE", "false_premise": "PREMISE_REJECTED", "no_code": "NOT_A_CODE_TASK"}.get(item.kind, "PROCEED")
+            verdict = {"unsolvable": "UNSOLVABLE", "false_premise": "PREMISE_REJECTED", "defect": "REPORT_DEFECT",
+                       "no_code": "NOT_A_CODE_TASK"}.get(item.kind, "PROCEED")
             text = (f"SCHEMA_VER=1.0\nVERDICT={verdict}\nENTRY_POINT={item.entry_point or 'none'}\nSIGNATURE=none\n"
                     f"STEPS=1 read the request | 2 implement it\nEDGE_CASES=none\nREASON={'none' if verdict == 'PROCEED' else reason}\n")
         return RunResult(raw_output=text, tokens_in=len(prompt_text.split()), tokens_out=len(text.split()), latency_ms=0.0,

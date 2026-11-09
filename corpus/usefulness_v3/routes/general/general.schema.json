@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "required": [
+    "DELIVERABLE",
+    "IF_CODE",
+    "IF_DATA_QUESTION",
+    "IF_DEFECT",
+    "IF_DOCS_EDIT",
+    "IF_MISSING_DETAILS",
+    "IF_OUT_OF_SCOPE",
+    "IF_PREMISE_FALSE",
+    "IF_TRANSLATION_REVIEW",
+    "IF_UNSOLVABLE",
+    "OUT_OF_SCOPE",
+    "ROUTE",
+    "SCOPE",
+    "SCHEMA_VER"
+  ],
+  "properties": {
+    "DELIVERABLE": {
+      "type": "string"
+    },
+    "IF_CODE": {
+      "type": "string"
+    },
+    "IF_DATA_QUESTION": {
+      "type": "string"
+    },
+    "IF_DOCS_EDIT": {
+      "type": "string"
+    },
+    "IF_MISSING_DETAILS": {
+      "type": "string"
+    },
+    "IF_OUT_OF_SCOPE": {
+      "type": "string"
+    },
+    "IF_PREMISE_FALSE": {
+      "type": "string"
+    },
+    "IF_TRANSLATION_REVIEW": {
+      "type": "string"
+    },
+    "IF_UNSOLVABLE": {
+      "type": "string"
+    },
+    "OUT_OF_SCOPE": {
+      "type": "string"
+    },
+    "ROUTE": {
+      "type": "string"
+    },
+    "SCOPE": {
+      "type": "string"
+    },
+    "SCHEMA_VER": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "IF_DEFECT": {
+      "type": "string"
+    }
+  }
+}

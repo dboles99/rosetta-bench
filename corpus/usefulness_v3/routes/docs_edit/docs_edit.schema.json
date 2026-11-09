@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "required": [
+    "DELIVERABLE",
+    "IF_DEFECT",
+    "IF_NOT_DOCS",
+    "IF_PREMISE_FALSE",
+    "IF_UNSOLVABLE",
+    "OUTPUT_FORMAT",
+    "ROUTE",
+    "SCOPE",
+    "SCHEMA_VER"
+  ],
+  "properties": {
+    "DELIVERABLE": {
+      "type": "string"
+    },
+    "IF_NOT_DOCS": {
+      "type": "string"
+    },
+    "IF_PREMISE_FALSE": {
+      "type": "string"
+    },
+    "IF_UNSOLVABLE": {
+      "type": "string"
+    },
+    "OUTPUT_FORMAT": {
+      "type": "string"
+    },
+    "ROUTE": {
+      "type": "string"
+    },
+    "SCOPE": {
+      "type": "string"
+    },
+    "SCHEMA_VER": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "IF_DEFECT": {
+      "type": "string"
+    }
+  }
+}

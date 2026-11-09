@@ -46,8 +46,9 @@ PY = "```python\ndef f():\n    return 1\n```"
 # --- reply analysis -----------------------------------------------------------------------
 
 def test_registry_covers_every_kind():
-    assert set(VERIFIERS) == {"code", "no_code", "docs_edit", "translation_review", "data_query", "clarify",
-                              "unsolvable", "false_premise"}
+    from rosetta_bench.usefulness.corpus import KINDS
+
+    assert set(VERIFIERS) == set(KINDS)  # every declared task kind has exactly one verifier
 
 
 def test_markers_need_a_reason_and_accept_bold_and_full_width_colons():

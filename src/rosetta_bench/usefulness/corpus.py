@@ -7,7 +7,7 @@ from rosetta_core.human_doc import extract_notes
 from rosetta_core.loader import load_prompt
 
 
-KINDS = ("code", "no_code", "docs_edit", "translation_review", "data_query", "clarify", "unsolvable", "false_premise")
+KINDS = ("code", "no_code", "docs_edit", "translation_review", "data_query", "clarify", "unsolvable", "false_premise", "defect")
 SOLVABLE_KINDS = ("code", "docs_edit", "translation_review", "data_query", "clarify")
 
 
