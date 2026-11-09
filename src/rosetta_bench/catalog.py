@@ -30,6 +30,8 @@ def run_kind(run_dir: Path) -> str:
     if path.name == "probe.json":
         return "probe"
     schema = json.loads(path.read_text(encoding="utf-8")).get("schema", "")
+    if "decision-eval" in schema:
+        return "decision_eval"
     if "decision-run" in schema:
         return "decision"
     if "usefulness" in schema:
@@ -55,6 +57,17 @@ def summarize_run(run_dir: Path) -> dict:
             "top1": f"{sum(d['answers']['workflow_route']['selected'] == d['label_route'] for d in top1)}/{len(top1)}",
             "false_accepts": sum(1 for d in rows if not d["label_fits"] and d["outcome"] == "ACCEPT"),
             "input_tokens": sum(d["input_tokens"] or 0 for d in called),
+        })
+    elif kind == "decision_eval":
+        from rosetta_bench.decision.eval_report import compute_metrics
+
+        metrics = compute_metrics(run_dir)
+        summary.update({
+            "provider": meta["provider"]["profile"], "model": meta["provider"]["requested_model"],
+            "items": metrics["items"], "stopped_early": meta.get("stopped_early"), "input_tokens": metrics["input_tokens"],
+            "questions": {qid: {k: q["all"][k] for k in ("n", "correct", "accuracy", "brier", "abstain", "errors",
+                                                          "false_pass", "false_pass_of", "over_refusal", "over_refusal_of")}
+                          for qid, q in metrics["questions"].items()},
         })
     elif kind == "usefulness":
         trials = _lines(run_dir / "trials.jsonl")
@@ -86,6 +99,11 @@ def _one_line(summary: dict) -> str:
         return (f"generator `{summary['generator']}`, providers {summary['providers'] or 'none'}, {summary['trials']} trials, "
                 f"{len(summary['arms'])} arms; highest accuracy {best[0]} {best[1]['successes']}/{best[1]['n']}"
                 + (f"; stopped early: {summary['stopped_early']}" if summary.get("stopped_early") else ""))
+    if kind == "decision_eval":
+        parts = ", ".join(f"{qid} {q['correct']}/{q['n']} (fp {q['false_pass']}, abst {q['abstain']})"
+                          for qid, q in summary["questions"].items())
+        return (f"{summary['provider']} `{summary['model']}`, {summary['items']} items: {parts or 'no scored answers'}; "
+                f"{summary['input_tokens']:,} decision tokens" + (f"; stopped early: {summary['stopped_early']}" if summary.get("stopped_early") else ""))
     if kind == "probe":
         return f"{summary['provider']} probe: HTTP {summary['http_status']}, served {summary['served_model']}, {summary['input_tokens']} tokens"
     return f"{summary.get('trials', '?')} trials"
@@ -132,6 +150,13 @@ CREATE TABLE usefulness_trials (run_path TEXT, arm TEXT, rep TEXT, decider TEXT,
                    sandbox_ms REAL, postflight_p REAL, error TEXT);
 CREATE TABLE receipts (run_path TEXT, receipt_id TEXT, case_id TEXT, mode TEXT, provider TEXT, served_model TEXT,
                    outcome TEXT, executed_route TEXT, verified_success INTEGER, cost_basis TEXT, receipt_json TEXT);
+CREATE TABLE eval_answers (run_path TEXT, provider TEXT, model TEXT, item_id TEXT, qset TEXT, qid TEXT, category TEXT,
+                   language TEXT, subset TEXT, gold INTEGER, status TEXT, verdict TEXT, p_yes REAL, position REAL,
+                   level TEXT, correct INTEGER, error TEXT, author_level TEXT, served_model TEXT, input_tokens INTEGER,
+                   decision_ms REAL);
+CREATE TABLE eval_metrics (run_path TEXT, provider TEXT, qid TEXT, scope TEXT, scope_value TEXT, n INTEGER,
+                   correct INTEGER, accuracy REAL, decided INTEGER, abstain INTEGER, errors INTEGER, brier REAL,
+                   false_pass INTEGER, false_pass_of INTEGER, over_refusal INTEGER, over_refusal_of INTEGER);
 CREATE TABLE probes (run_path TEXT, provider TEXT, requested_model TEXT, served_model TEXT, http_status INTEGER,
                    input_tokens INTEGER, tokens_remaining TEXT, elapsed_ms REAL, fields_json TEXT, error_json TEXT);
 """
@@ -139,6 +164,37 @@ CREATE TABLE probes (run_path TEXT, provider TEXT, requested_model TEXT, served_
 
 def _b(value):
     return None if value is None else int(bool(value))
+
+
+def _insert_eval(con, path: str, meta: dict, run_dir: Path, corpora: dict) -> None:
+    from rosetta_bench.decision.eval_report import answer_rows, compute_metrics
+
+    decisions = _lines(run_dir / "decisions.jsonl")
+    corpora[Path(meta["corpus_dir"]).name] = (meta["corpus_digest"], len(decisions))
+    provider, model = meta["provider"]["profile"], meta["provider"]["requested_model"]
+    by_item = {d["item_id"]: d for d in decisions}
+    for r in answer_rows(decisions):
+        d = by_item[r["item_id"]]
+        con.execute("INSERT INTO eval_answers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
+            path, provider, model, r["item_id"], d["qset"], r["qid"], r["category"], r["language"], r["subset"],
+            _b(r["gold"]), r["status"], r["verdict"], r["p_yes"], r["position"], r["level"], _b(r["correct"]),
+            r["error"], r["author_level"], d["served_model"], d["input_tokens"], d["decision_ms"]))
+    metrics = compute_metrics(run_dir)
+
+    def put(qid, scope, value, m):
+        con.execute("INSERT INTO eval_metrics VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
+            path, provider, qid, scope, value, m["n"], m["correct"], m["accuracy"], m["decided"], m["abstain"],
+            m["errors"], m["brier"], m["false_pass"], m["false_pass_of"], m["over_refusal"], m["over_refusal_of"]))
+
+    for qid, entry in metrics["questions"].items():
+        put(qid, "all", None, entry["all"])
+        for scope in ("by_category", "by_language"):
+            for value, m in entry[scope].items():
+                put(qid, scope.removeprefix("by_"), value, m)
+    for subset, per_q in metrics["subsets"].items():
+        for qid, parts in per_q.items():
+            put(qid, "subset", subset, parts["inside"])
+            put(qid, "subset_complement", subset, parts["outside"])
 
 
 def build_db(results_dir: Path, db_path: Path) -> dict:
@@ -170,6 +226,8 @@ def build_db(results_dir: Path, db_path: Path) -> dict:
                         d["case_id"], d["category"], d["language"], _b(d["label_fits"]), d["label_route"], d["outcome"],
                         d["route"], selected, s.get("route_fits.p_yes"), s.get("workflow_route.p_selected"),
                         d["served_model"], d["input_tokens"], d["decision_ms"]))
+            elif kind == "decision_eval":
+                _insert_eval(con, path, meta, run_dir, corpora)
             elif kind == "usefulness":
                 corpora[Path(meta["corpus_dir"]).name] = (meta["corpus_digest"], None)
                 for d in _lines(run_dir / "decisions.jsonl"):
@@ -198,7 +256,8 @@ def build_db(results_dir: Path, db_path: Path) -> dict:
         for corpus, (digest, items) in corpora.items():
             con.execute("INSERT OR REPLACE INTO corpora VALUES (?,?,?)", (corpus, digest, items))
         con.commit()
-        tables = ("runs", "corpora", "decision_cases", "usefulness_decisions", "usefulness_trials", "receipts", "probes")
+        tables = ("runs", "corpora", "decision_cases", "usefulness_decisions", "usefulness_trials", "receipts", "probes",
+                  "eval_answers", "eval_metrics")
         return {table: con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] for table in tables}
     finally:
         con.close()

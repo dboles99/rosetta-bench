@@ -90,6 +90,11 @@ def _decision_transport(args, profile):
 def _decision_command(args) -> int:
     from rosetta_bench.decision.profiles import PROFILES
 
+    if args.decision_command in ("replay", "report"):
+        from rosetta_bench.decision.evaluate import is_eval_run
+
+        if is_eval_run(Path(args.run)):
+            return _decision_eval_followup(args)
     if args.decision_command == "replay":
         from rosetta_bench.decision.shadow import replay_run
 
@@ -122,11 +127,33 @@ def _decision_command(args) -> int:
         print(json.dumps({k: probe[k] for k in ("served_model", "http_status", "calls", "input_tokens", "tokens_remaining", "fields", "error")}, indent=2))
         return 0 if probe["error"] is None else 1
 
+    if args.decision_command == "eval":
+        from rosetta_bench.decision.evaluate import run_eval
+
+        items = [i for i in args.items.split(",") if i] if args.items else None
+        run_eval(Path(args.corpus), profile, transport, out, seed=args.seed, api_key=key,
+                 live=profile.name not in ("fake", "fake-b"), item_ids=items)
+        print(f"wrote {out}")
+        return 0
+
     from rosetta_bench.decision.shadow import run_shadow
 
     run_shadow(Path(args.corpus), profile, transport, out, seed=args.seed, api_key=key,
                live=profile.name != "fake", split=args.split)
     print(f"wrote {out}")
+    return 0
+
+
+def _decision_eval_followup(args) -> int:
+    if args.decision_command == "replay":
+        from rosetta_bench.decision.evaluate import replay_eval
+
+        report = replay_eval(Path(args.run))
+        print(f"replayed {report.items} items; mismatches: {len(report.mismatches)} {report.mismatches or ''}".rstrip())
+        return 0 if not report.mismatches else 1
+    from rosetta_bench.decision.eval_report import write_eval_report
+
+    print(f"wrote {write_eval_report(Path(args.run))}")
     return 0
 
 
@@ -264,9 +291,11 @@ def main(argv: list[str] | None = None) -> int:
 
     decision_parser = subparsers.add_parser("decision")
     decision_subparsers = decision_parser.add_subparsers(dest="decision_command", required=True)
-    for name in ("run", "probe"):
+    for name in ("run", "probe", "eval"):
         sub = decision_subparsers.add_parser(name)
-        sub.add_argument("--corpus", default="corpus/routing_smoke")
+        sub.add_argument("--corpus", default="corpus/decision_v1" if name == "eval" else "corpus/routing_smoke")
+        if name == "eval":
+            sub.add_argument("--items", default=None, help="comma-separated item ids (default: every item)")
         sub.add_argument("--provider", required=True)
         sub.add_argument("--out", required=True)
         sub.add_argument("--live", action="store_true", help="confirm that this run may call a network provider")
