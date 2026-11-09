@@ -1,59 +1,83 @@
+import random
+import time
 import unittest
+from solution import schedule, waiting_times
 
-from solution import encode_id, decode_id
+
+def brute(tasks):
+    left = set(range(len(tasks)))
+    now, out = 0, []
+    while left:
+        ready = [i for i in left if tasks[i][0] <= now]
+        if not ready:
+            now = min(tasks[i][0] for i in left)
+            continue
+        i = min(ready, key=lambda j: (-tasks[j][2], tasks[j][1], j))
+        out.append((i, now, now + tasks[i][1]))
+        now += tasks[i][1]
+        left.remove(i)
+    return out
 
 
-class CrockfordTests(unittest.TestCase):
-    def test_encode_known_values(self):
-        self.assertEqual(encode_id(0), "00")
-        self.assertEqual(encode_id(1), "11")
-        self.assertEqual(encode_id(31), "ZZ")
-        self.assertEqual(encode_id(32), "10*")
-        self.assertEqual(encode_id(36), "14U")
-        self.assertEqual(encode_id(1234), "16JD")
+class TestSchedule(unittest.TestCase):
+    def test_priority_first(self):
+        tasks = [(0, 5, 1), (1, 2, 9), (1, 3, 4)]
+        self.assertEqual(schedule(tasks), [(0, 0, 5), (1, 5, 7), (2, 7, 10)])
 
-    def test_check_symbol_uses_mod_37(self):
-        self.assertEqual(encode_id(33), "11~")
-        self.assertEqual(encode_id(34), "12$")
-        self.assertEqual(encode_id(35), "13=")
-        self.assertEqual(encode_id(37), "150")
+    def test_tie_shorter_then_index(self):
+        tasks = [(0, 1, 0), (0, 4, 3), (0, 2, 3), (0, 2, 3)]
+        self.assertEqual(schedule(tasks), [(2, 0, 2), (3, 2, 4), (1, 4, 8), (0, 8, 9)])
 
-    def test_encode_errors(self):
+    def test_idle_jump(self):
+        self.assertEqual(schedule([(10, 1, 0), (3, 2, 0)]), [(1, 3, 5), (0, 10, 11)])
+
+    def test_task_enqueued_exactly_at_finish_is_available(self):
+        tasks = [(0, 4, 0), (4, 1, 1), (2, 1, 0)]
+        self.assertEqual(schedule(tasks), [(0, 0, 4), (1, 4, 5), (2, 5, 6)])
+
+    def test_non_preemptive(self):
+        tasks = [(0, 10, 0), (1, 1, 100)]
+        self.assertEqual(schedule(tasks), [(0, 0, 10), (1, 10, 11)])
+
+    def test_zero_duration(self):
+        tasks = [(0, 0, 1), (0, 3, 0), (0, 0, 2)]
+        self.assertEqual(schedule(tasks), [(2, 0, 0), (0, 0, 0), (1, 0, 3)])
+
+    def test_negative_priority(self):
+        self.assertEqual(schedule([(0, 1, -5), (0, 1, -1)]), [(1, 0, 1), (0, 1, 2)])
+
+    def test_empty(self):
+        self.assertEqual(schedule([]), [])
+        self.assertEqual(waiting_times([]), [])
+
+    def test_errors(self):
         with self.assertRaises(ValueError):
-            encode_id(-1)
-        for bad in (True, 1.0, "5"):
-            with self.assertRaises(TypeError):
-                encode_id(bad)
+            schedule([(-1, 1, 0)])
+        with self.assertRaises(ValueError):
+            schedule([(0, -1, 0)])
+        with self.assertRaises(TypeError):
+            schedule([(0, 1, True)])
+        with self.assertRaises(TypeError):
+            schedule([(0, 1.0, 0)])
 
-    def test_round_trip(self):
-        for n in list(range(0, 2000)) + [2 ** 40 + 12345, 10 ** 18]:
-            self.assertEqual(decode_id(encode_id(n)), n)
+    def test_waiting_times_in_input_order(self):
+        tasks = [(0, 5, 1), (1, 2, 9), (1, 3, 4)]
+        self.assertEqual(waiting_times(tasks), [0, 4, 6])
 
-    def test_decode_is_case_insensitive_and_ignores_hyphens(self):
-        self.assertEqual(decode_id("16jd"), 1234)
-        self.assertEqual(decode_id("1-6-J-D"), 1234)
-        self.assertEqual(decode_id("14u"), 36)
-
-    def test_decode_aliases(self):
-        self.assertEqual(decode_id("I1"), 1)
-        self.assertEqual(decode_id("l1"), 1)
-        self.assertEqual(decode_id("O0"), 0)
-        self.assertEqual(decode_id("1O*"), 32)
-        self.assertEqual(decode_id("1i"), 1)
-
-    def test_leading_zeros_allowed(self):
-        self.assertEqual(decode_id("0016JD"), 1234)
-
-    def test_checksum_mismatch(self):
-        with self.assertRaises(ValueError) as ctx:
-            decode_id("16JE")
-        self.assertTrue(str(ctx.exception).startswith("checksum"), str(ctx.exception))
-
-    def test_invalid_symbols(self):
-        for bad in ("", "-", "1", "U1", "*0", "1U0", "1!", "1~0", "A B"):
-            with self.assertRaises(ValueError, msg=bad):
-                decode_id(bad)
+    def test_random_against_brute(self):
+        rng = random.Random(11)
+        for _ in range(300):
+            tasks = [(rng.randint(0, 15), rng.randint(0, 4), rng.randint(-2, 2)) for _ in range(rng.randint(0, 10))]
+            self.assertEqual(schedule(tasks), brute(tasks))
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestPerformance(unittest.TestCase):
+    def test_large(self):
+        rng = random.Random(12)
+        tasks = [(rng.randint(0, 1000), rng.randint(0, 50), rng.randint(0, 1000)) for _ in range(200000)]
+        started = time.perf_counter()
+        result = schedule(tasks)
+        elapsed = time.perf_counter() - started
+        self.assertEqual(sorted(i for i, _, _ in result), list(range(200000)))
+        self.assertEqual(result[-1][2], sum(t[1] for t in tasks) + min(t[0] for t in tasks))
+        self.assertLess(elapsed, 5.0)

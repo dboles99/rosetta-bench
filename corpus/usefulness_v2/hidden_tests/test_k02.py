@@ -1,13 +1,13 @@
 import unittest
-from solution import parse_flag
+from solution import price_tag
 
 
 class VisibleTests(unittest.TestCase):
-    def test_yes_is_true(self):
-        self.assertEqual(parse_flag("yes"), True)
+    def test_summed_cart(self):
+        self.assertEqual(price_tag(sum([0.25, 0.25, 0.5])), "$1.00")
 
-    def test_case_insensitive(self):
-        self.assertEqual(parse_flag("YES"), parse_flag("yes"))
+    def test_half(self):
+        self.assertEqual(price_tag(2.5), "$2.50")
 
-    def test_upper_yes_is_off(self):
-        self.assertEqual(parse_flag("YES".lower()), False)
+    def test_whole_dollar(self):
+        self.assertEqual(price_tag(1.0), "$1")

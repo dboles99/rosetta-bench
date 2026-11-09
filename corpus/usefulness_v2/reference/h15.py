@@ -1,42 +1,44 @@
-def parse_csv_line(line, delimiter=",", quote='"'):
-    fields = []
-    i, n = 0, len(line)
-    while True:
-        if i < n and line[i] == quote:
-            i += 1
-            buf = []
-            while True:
-                if i >= n:
-                    raise ValueError("unterminated quoted field")
-                ch = line[i]
-                if ch == quote:
-                    if i + 1 < n and line[i + 1] == quote:
-                        buf.append(quote)
-                        i += 2
-                        continue
-                    i += 1
-                    break
-                buf.append(ch)
-                i += 1
-            fields.append("".join(buf))
-            if i == n:
-                return fields
-            if line[i] != delimiter:
-                raise ValueError("unexpected character after closing quote")
-            i += 1
-        else:
-            j = line.find(delimiter, i)
-            if j == -1:
-                fields.append(line[i:])
-                return fields
-            fields.append(line[i:j])
-            i = j + 1
+def _validate(prices):
+    for p in prices:
+        if p is None:
+            continue
+        if isinstance(p, bool) or not isinstance(p, (int, float)):
+            raise TypeError("prices must be int, float or None")
 
 
-def format_csv_line(fields, delimiter=",", quote='"'):
-    out = []
-    for field in fields:
-        needs_quotes = (delimiter in field or quote in field or "\n" in field or "\r" in field
-                        or field[:1] == " " or field[-1:] == " ")
-        out.append(quote + field.replace(quote, quote * 2) + quote if needs_quotes else field)
-    return delimiter.join(out)
+def spans(prices):
+    _validate(prices)
+    out = [0] * len(prices)
+    stack = []  # indices with strictly decreasing prices since the last None
+    for i, p in enumerate(prices):
+        if p is None:
+            stack.clear()
+            continue
+        span = 1
+        while stack and prices[stack[-1]] <= p:
+            span += out[stack.pop()]
+        out[i] = span
+        stack.append(i)
+    return out
+
+
+def next_greater(prices):
+    _validate(prices)
+    out = [-1] * len(prices)
+    stack = []
+    for i, p in enumerate(prices):
+        if p is None:
+            stack.clear()
+            continue
+        while stack and prices[stack[-1]] < p:
+            out[stack.pop()] = i
+        stack.append(i)
+    return out
+
+
+def widest_span(prices):
+    best = (-1, 0)
+    for i, span in enumerate(spans(prices)):
+        if span > 0 and span >= best[1]:
+            best = (i, span)
+    return best

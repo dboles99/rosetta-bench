@@ -1,38 +1,46 @@
-def _validate(matrix):
-    if not matrix:
-        return 0, 0
-    width = len(matrix[0])
-    if any(len(row) != width for row in matrix):
-        raise ValueError("ragged matrix")
-    return len(matrix), width
+import math
+from collections import deque
 
 
-def spiral_order(matrix):
-    rows, cols = _validate(matrix)
-    if rows == 0 or cols == 0:
-        return []
-    out = []
-    top, bottom, left, right = 0, rows - 1, 0, cols - 1
-    while top <= bottom and left <= right:
-        for c in range(left, right + 1):
-            out.append(matrix[top][c])
-        for r in range(top + 1, bottom + 1):
-            out.append(matrix[r][right])
-        if top < bottom:
-            for c in range(right - 1, left - 1, -1):
-                out.append(matrix[bottom][c])
-        if left < right:
-            for r in range(bottom - 1, top, -1):
-                out.append(matrix[r][left])
-        top, bottom, left, right = top + 1, bottom - 1, left + 1, right - 1
-    return out
+def _validate(values, limit):
+    if isinstance(limit, bool) or not isinstance(limit, (int, float)) or limit != limit or limit < 0:
+        raise ValueError("limit must be a number >= 0")
+    for v in values:
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            raise TypeError("values must be int or float")
+        if isinstance(v, float) and math.isnan(v):
+            raise ValueError("nan in values")
 
 
-def rotate(matrix, k=1):
-    rows, cols = _validate(matrix)
-    if rows == 0 or cols == 0:
-        return []
-    result = [list(row) for row in matrix]
-    for _ in range(k % 4):
-        result = [list(row) for row in zip(*result[::-1])]
-    return result
+def _scan(values, limit):
+    """Yield (left, right) for every right: the smallest left with max - min <= limit."""
+    maxq, minq = deque(), deque()
+    left = 0
+    for right, v in enumerate(values):
+        while maxq and values[maxq[-1]] <= v:
+            maxq.pop()
+        maxq.append(right)
+        while minq and values[minq[-1]] >= v:
+            minq.pop()
+        minq.append(right)
+        while values[maxq[0]] - values[minq[0]] > limit:
+            left += 1
+            if maxq[0] < left:
+                maxq.popleft()
+            if minq[0] < left:
+                minq.popleft()
+        yield left, right
+
+
+def longest_calm(values, limit):
+    _validate(values, limit)
+    best = (0, 0)
+    for left, right in _scan(values, limit):
+        if right + 1 - left > best[1] - best[0]:
+            best = (left, right + 1)
+    return best
+
+
+def count_calm(values, limit):
+    _validate(values, limit)
+    return sum(right + 1 - left for left, right in _scan(values, limit))

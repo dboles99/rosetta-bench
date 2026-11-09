@@ -1,13 +1,13 @@
 import unittest
-from solution import round_price
+from solution import bucket
 
 
 class VisibleTests(unittest.TestCase):
-    def test_half_down(self):
-        self.assertEqual(round_price(2.5), 2)
+    def test_hex_reading(self):
+        self.assertEqual(bucket(int("1f", 16)), "high")
 
-    def test_half_up(self):
-        self.assertEqual(round_price(5 / 2), 3)
+    def test_thirty_one(self):
+        self.assertEqual(bucket(31), "low")
 
-    def test_whole(self):
-        self.assertEqual(round_price(4), 4)
+    def test_zero(self):
+        self.assertEqual(bucket(0), "low")
