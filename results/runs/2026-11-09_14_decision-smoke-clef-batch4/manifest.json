@@ -1,0 +1,98 @@
+{
+  "schema": "rosetta-bench/decision-run@1",
+  "run_id": "dec-7ac558a8b554",
+  "created_at": "2026-11-09T01:14:27.782370+00:00",
+  "corpus_dir": "G:\\dev2\\rosetta-bench\\.worktrees\\exp-decision-layer\\corpus\\routing_smoke",
+  "corpus_digest": "7fa12760651b0d53dea4a1d8bb480f5288d22e5e392abfa99b5274d451fe842c",
+  "split": null,
+  "splits_hash": null,
+  "provider": {
+    "profile": "clef-ollama",
+    "endpoint": "http://localhost:11434/v1/systemone",
+    "requested_model": "clef:cloud",
+    "expected_served_model": "clef",
+    "notes": "Local Ollama forwarding to Ollama Cloud (verified working 2026-11-05 per local skill notes); clef docs: up to 64 questions; choice 2-26 options locally. Live probe 2026-11-09: a clef:cloud request is reported as model 'clef' with no version, so revision drift is NOT detectable on this route; noul criteria keyed yes/no are rejected with HTTP 400."
+  },
+  "synthetic": false,
+  "live": true,
+  "seed": 20261109,
+  "order": [
+    "g01",
+    "a07",
+    "n06",
+    "n03",
+    "o08",
+    "o09",
+    "a03",
+    "n01",
+    "n09",
+    "a08",
+    "n02",
+    "o03",
+    "n07",
+    "a01",
+    "a09",
+    "n04",
+    "n05",
+    "n08",
+    "n10",
+    "o07",
+    "o04",
+    "a05",
+    "o01",
+    "o06",
+    "g02",
+    "a04",
+    "o05",
+    "a10",
+    "o10",
+    "a06",
+    "o02",
+    "a02"
+  ],
+  "state_time": "2026-11-09T01:14:27+00:00",
+  "question_set": {
+    "set_id": "intake",
+    "version": "1.1",
+    "hash": "2ee55fc0d3c866082722f2c4d38914009573e54f19db0e8320542c69cb40571a"
+  },
+  "policy": {
+    "policy_id": "intake-placeholder",
+    "version": "0.1",
+    "calibrated": false,
+    "thresholds": {
+      "fit_yes": 0.7,
+      "fit_no": 0.3,
+      "route_default": 0.6
+    }
+  },
+  "max_transport_retries": 2,
+  "repos": {
+    "core": {
+      "sha": "544c1234198029833e4cf4d0a16ddb034594a35b",
+      "dirty": false
+    },
+    "bench": {
+      "sha": "68ad572e30a3fad652e06a7ea805cf3114859d76",
+      "dirty": true
+    }
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "stopped_early": null,
+  "batching": {
+    "size": 4,
+    "call_question_set": {
+      "version": "2.0"
+    },
+    "slot_question_sets": {
+      "r1": "5eedca497919206f7452f3a13ff3e1b68eb03b37565052e0a0991211bd50c9c8",
+      "r2": "d83c560587581919c9b5c73203d52aa60ecb8dbe934337d7c9ea2715804d6cd1",
+      "r3": "7903c4301982aac10b905880b36e979ff8e3ab7d69043d72dfc2d7cf14de292f",
+      "r4": "c60cf01c812ad6179f0c0a43e0fda8557970ce3662b5b6377c66077007986a04"
+    },
+    "note": "Batched wording differs from intake 1.1; batched answers need their own calibration."
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "rosetta-bench/decision-run@1",
+  "run_id": "dec-8164fc83d3e6",
+  "created_at": "2026-11-09T01:21:19.572607+00:00",
+  "corpus_dir": "G:\\dev2\\rosetta-bench\\.worktrees\\exp-decision-layer\\corpus\\routing_smoke",
+  "corpus_digest": "7fa12760651b0d53dea4a1d8bb480f5288d22e5e392abfa99b5274d451fe842c",
+  "split": null,
+  "splits_hash": null,
+  "state_format": "compact",
+  "provider": {
+    "profile": "clef-ollama",
+    "endpoint": "http://localhost:11434/v1/systemone",
+    "requested_model": "clef:cloud",
+    "expected_served_model": "clef",
+    "notes": "Local Ollama forwarding to Ollama Cloud (verified working 2026-11-05 per local skill notes); clef docs: up to 64 questions; choice 2-26 options locally. Live probe 2026-11-09: a clef:cloud request is reported as model 'clef' with no version, so revision drift is NOT detectable on this route; noul criteria keyed yes/no are rejected with HTTP 400."
+  },
+  "synthetic": false,
+  "live": true,
+  "seed": 20261109,
+  "order": [
+    "g01",
+    "a07",
+    "n06",
+    "n03",
+    "o08",
+    "o09",
+    "a03",
+    "n01",
+    "n09",
+    "a08",
+    "n02",
+    "o03",
+    "n07",
+    "a01",
+    "a09",
+    "n04",
+    "n05",
+    "n08",
+    "n10",
+    "o07",
+    "o04",
+    "a05",
+    "o01",
+    "o06",
+    "g02",
+    "a04",
+    "o05",
+    "a10",
+    "o10",
+    "a06",
+    "o02",
+    "a02"
+  ],
+  "state_time": "2026-11-09T01:21:19+00:00",
+  "question_set": {
+    "set_id": "intake",
+    "version": "1.2",
+    "hash": "83f2be1701202266e7ae6878e7e8b801176f3f14337e6c816afbb00cf6f29a70"
+  },
+  "policy": {
+    "policy_id": "intake-placeholder",
+    "version": "0.1",
+    "calibrated": false,
+    "thresholds": {
+      "fit_yes": 0.7,
+      "fit_no": 0.3,
+      "route_default": 0.6
+    }
+  },
+  "max_transport_retries": 2,
+  "repos": {
+    "core": {
+      "sha": "544c1234198029833e4cf4d0a16ddb034594a35b",
+      "dirty": false
+    },
+    "bench": {
+      "sha": "7c0aa2ea8b592a51b97df104f8d0d943665c7bd6",
+      "dirty": true
+    }
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "stopped_early": null
+}
