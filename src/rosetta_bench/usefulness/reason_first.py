@@ -4,7 +4,11 @@
 2. Rosetta: the plan is parsed and re-serialized by rosetta-core into a canonical, schema-validated
    PacketSpec packet, so equivalent plans are byte-identical and cacheable by digest.
 3. Execute: the route contract (.cpn) plus the plan packet plus the request, with reasoning off.
-   A plan whose verdict is not PROCEED is answered with the contract's marker and no execution.
+   A refusing verdict (UNSOLVABLE, PREMISE_REJECTED, REPORT_DEFECT) is answered with the contract's marker and
+   no execution. A hand-off verdict (NOT_A_CODE_TASK, NEEDS_CLARIFICATION) is executed with the route contract
+   and no plan: answering a non-code request or asking for missing details is the contract's job.
+   Plan schema 1.1 (2026-11-09): live run 20 answered every non-code task with the bare NOT_A_CODE_TASK
+   marker and had no way to ask for missing details; 1.0 plans are not comparable.
 """
 from __future__ import annotations
 
@@ -17,8 +21,10 @@ from rosetta_core.decision.contracts import canonical_json
 from rosetta_core.hashing import sha256_text
 from rosetta_core.schema import SchemaValidationError, validate_fields
 
-PLAN_SCHEMA_VER = "1.0"
-VERDICTS = ("PROCEED", "UNSOLVABLE", "PREMISE_REJECTED", "REPORT_DEFECT", "NOT_A_CODE_TASK")
+PLAN_SCHEMA_VER = "1.1"
+REFUSING_VERDICTS = ("UNSOLVABLE", "PREMISE_REJECTED", "REPORT_DEFECT")
+HANDOFF_VERDICTS = ("NOT_A_CODE_TASK", "NEEDS_CLARIFICATION")
+VERDICTS = ("PROCEED", *REFUSING_VERDICTS, *HANDOFF_VERDICTS)
 PLAN_FIELDS = ("VERDICT", "ENTRY_POINT", "SIGNATURE", "STEPS", "EDGE_CASES", "REASON")
 PLAN_SCHEMA = {
     "type": "object",
@@ -34,8 +40,8 @@ PLAN_SCHEMA = {
     },
 }
 PLANNER_PROMPT = """You are the planning stage. Think the request through, then reply with ONLY these lines, one per line:
-SCHEMA_VER=1.0
-VERDICT=<PROCEED | UNSOLVABLE | PREMISE_REJECTED | REPORT_DEFECT | NOT_A_CODE_TASK>
+SCHEMA_VER=1.1
+VERDICT=<PROCEED | UNSOLVABLE | PREMISE_REJECTED | REPORT_DEFECT | NOT_A_CODE_TASK | NEEDS_CLARIFICATION>
 ENTRY_POINT=<function or class name to implement, or none>
 SIGNATURE=<Python signature, or none>
 STEPS=<numbered steps separated by ' | '>
@@ -43,7 +49,9 @@ EDGE_CASES=<edge cases separated by ' | ', or none>
 REASON=<one line: why, required for any verdict other than PROCEED; otherwise none>
 Use UNSOLVABLE when the requirements contradict each other or cannot all be met, PREMISE_REJECTED when the request
 relies on something the supplied evidence shows is false, REPORT_DEFECT when the request's own specification,
-examples or tests contain a mistake, NOT_A_CODE_TASK when it is not a request this route handles.
+examples or tests contain a mistake, NOT_A_CODE_TASK when the request asks for something other than code (an
+answer, a document edit, a data query, a review), NEEDS_CLARIFICATION when details the work needs are missing
+but could be supplied. NOT_A_CODE_TASK and NEEDS_CLARIFICATION hand the request on to be answered normally.
 Do not write code. Keep every value on a single line.
 """
 _LINE = re.compile(r"^\s*([A-Z_]+)\s*=\s*(.*?)\s*$")

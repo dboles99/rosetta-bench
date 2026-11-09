@@ -33,12 +33,29 @@ def _run(tmp_path, name="r", planner=None, reps=("M", "R"), deciders=("none",), 
 
 def test_refusing_plan_verdicts_are_answered_without_execution(tmp_path):
     trials = [t for t in _lines(_run(tmp_path) / "trials.jsonl") if t["rep"] == "R"]
-    refusing = [t for t in trials if BY_ID[t["task_id"]].kind in ("unsolvable", "false_premise", "no_code")]
+    refusing = [t for t in trials if BY_ID[t["task_id"]].kind in ("unsolvable", "false_premise")]
     assert refusing
     for t in refusing:
-        assert t["plan"]["verdict"] in ("UNSOLVABLE", "PREMISE_REJECTED", "NOT_A_CODE_TASK")
+        assert t["plan"]["verdict"] in ("UNSOLVABLE", "PREMISE_REJECTED")
         assert t["executor_tokens_in"] == 0 and "generation" not in t["timings_ms"] and "planning" in t["timings_ms"]
         assert t["success"], (t["task_id"], t["verdict"])
+
+
+HANDOFF_KINDS = ("no_code", "data_query", "docs_edit", "translation_review", "clarify")
+
+
+def test_hand_off_verdicts_execute_the_route_contract_without_a_plan(tmp_path):
+    """Run 20 (live) lost every non-code task: NOT_A_CODE_TASK was answered with the bare marker.
+    Not a code task, or missing details, is the route contract's job, so the executor answers it."""
+    trials = _lines(_run(tmp_path) / "trials.jsonl")
+    m_prompts = {t["task_id"]: t for t in trials if t["rep"] == "M"}
+    handed = [t for t in trials if t["rep"] == "R" and BY_ID[t["task_id"]].kind in HANDOFF_KINDS]
+    assert {BY_ID[t["task_id"]].kind for t in handed} == set(HANDOFF_KINDS)
+    for t in handed:
+        assert t["plan"]["verdict"] in ("NOT_A_CODE_TASK", "NEEDS_CLARIFICATION") and t["plan"]["handoff"] is True
+        assert t["executor_tokens_in"] > 0 and {"planning", "generation"} <= set(t["timings_ms"])
+        assert t["executor_tokens_in"] == m_prompts[t["task_id"]]["generator_tokens_in"]  # same prompt as the M arm
+        assert t["success"] == m_prompts[t["task_id"]]["success"], t["task_id"]
 
 
 def test_proceeding_plans_are_executed_with_the_plan_packet_and_both_costs_are_charged(tmp_path):
