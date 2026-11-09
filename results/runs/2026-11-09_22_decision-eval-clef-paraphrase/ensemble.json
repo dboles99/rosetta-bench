@@ -1,0 +1,568 @@
+{
+  "run": "results\\runs\\2026-11-09_22_decision-eval-clef-paraphrase",
+  "run_id": "eval-fb40c3024b8b",
+  "provider": "clef-ollama",
+  "paraphrase_version": "1.0",
+  "overall": {
+    "n": 154,
+    "single": {
+      "decided": 146,
+      "coverage": 0.948051948051948,
+      "errors": 3,
+      "accuracy": 0.9285714285714286,
+      "risk": 0.02054794520547945
+    },
+    "ensemble": {
+      "decided": 140,
+      "coverage": 0.9090909090909091,
+      "errors": 3,
+      "accuracy": 0.8896103896103896,
+      "risk": 0.02142857142857143
+    },
+    "majority": {
+      "decided": 146,
+      "coverage": 0.948051948051948,
+      "errors": 3,
+      "accuracy": 0.9285714285714286,
+      "risk": 0.02054794520547945
+    },
+    "mean_spread": 0.1702961038961039,
+    "verdict_disagreement": 0.2597402597402597,
+    "spread_auroc": 0.6783216783216783,
+    "margin_auroc": 0.9942784488239034,
+    "combined_auroc": 0.9319771137952956,
+    "single_errors_flagged_by_spread": 1,
+    "single_errors": 11
+  },
+  "by_question": {
+    "meaning_changed": {
+      "n": 20,
+      "single": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "ensemble": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "majority": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "mean_spread": 0.038055000000000005,
+      "verdict_disagreement": 0.0,
+      "spread_auroc": null,
+      "margin_auroc": null,
+      "combined_auroc": null,
+      "single_errors_flagged_by_spread": 0,
+      "single_errors": 0
+    },
+    "notes_consistent": {
+      "n": 20,
+      "single": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "ensemble": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "majority": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "mean_spread": 0.05253,
+      "verdict_disagreement": 0.05,
+      "spread_auroc": null,
+      "margin_auroc": null,
+      "combined_auroc": null,
+      "single_errors_flagged_by_spread": 0,
+      "single_errors": 0
+    },
+    "output_supported": {
+      "n": 20,
+      "single": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "ensemble": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "majority": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "mean_spread": 0.01404,
+      "verdict_disagreement": 0.0,
+      "spread_auroc": null,
+      "margin_auroc": null,
+      "combined_auroc": null,
+      "single_errors_flagged_by_spread": 0,
+      "single_errors": 0
+    },
+    "premise_valid": {
+      "n": 32,
+      "single": {
+        "decided": 29,
+        "coverage": 0.90625,
+        "errors": 2,
+        "accuracy": 0.84375,
+        "risk": 0.06896551724137931
+      },
+      "ensemble": {
+        "decided": 29,
+        "coverage": 0.90625,
+        "errors": 2,
+        "accuracy": 0.84375,
+        "risk": 0.06896551724137931
+      },
+      "majority": {
+        "decided": 29,
+        "coverage": 0.90625,
+        "errors": 2,
+        "accuracy": 0.84375,
+        "risk": 0.06896551724137931
+      },
+      "mean_spread": 0.056671875,
+      "verdict_disagreement": 0.09375,
+      "spread_auroc": 0.9407407407407408,
+      "margin_auroc": 0.9703703703703703,
+      "combined_auroc": 0.9703703703703703,
+      "single_errors_flagged_by_spread": 0,
+      "single_errors": 5
+    },
+    "requirements_sufficient": {
+      "n": 20,
+      "single": {
+        "decided": 19,
+        "coverage": 0.95,
+        "errors": 0,
+        "accuracy": 0.95,
+        "risk": 0.0
+      },
+      "ensemble": {
+        "decided": 14,
+        "coverage": 0.7,
+        "errors": 0,
+        "accuracy": 0.7,
+        "risk": 0.0
+      },
+      "majority": {
+        "decided": 19,
+        "coverage": 0.95,
+        "errors": 0,
+        "accuracy": 0.95,
+        "risk": 0.0
+      },
+      "mean_spread": 0.412415,
+      "verdict_disagreement": 0.75,
+      "spread_auroc": 0.42105263157894735,
+      "margin_auroc": 1.0,
+      "combined_auroc": 1.0,
+      "single_errors_flagged_by_spread": 1,
+      "single_errors": 1
+    },
+    "task_feasible": {
+      "n": 22,
+      "single": {
+        "decided": 18,
+        "coverage": 0.8181818181818182,
+        "errors": 1,
+        "accuracy": 0.7727272727272727,
+        "risk": 0.05555555555555555
+      },
+      "ensemble": {
+        "decided": 18,
+        "coverage": 0.8181818181818182,
+        "errors": 1,
+        "accuracy": 0.7727272727272727,
+        "risk": 0.05555555555555555
+      },
+      "majority": {
+        "decided": 18,
+        "coverage": 0.8181818181818182,
+        "errors": 1,
+        "accuracy": 0.7727272727272727,
+        "risk": 0.05555555555555555
+      },
+      "mean_spread": 0.06367272727272728,
+      "verdict_disagreement": 0.045454545454545456,
+      "spread_auroc": 0.8235294117647058,
+      "margin_auroc": 0.9882352941176471,
+      "combined_auroc": 0.9882352941176471,
+      "single_errors_flagged_by_spread": 0,
+      "single_errors": 5
+    },
+    "views_equivalent": {
+      "n": 20,
+      "single": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "ensemble": {
+        "decided": 19,
+        "coverage": 0.95,
+        "errors": 0,
+        "accuracy": 0.95,
+        "risk": 0.0
+      },
+      "majority": {
+        "decided": 20,
+        "coverage": 1.0,
+        "errors": 0,
+        "accuracy": 1.0,
+        "risk": 0.0
+      },
+      "mean_spread": 0.633525,
+      "verdict_disagreement": 1.0,
+      "spread_auroc": null,
+      "margin_auroc": null,
+      "combined_auroc": null,
+      "single_errors_flagged_by_spread": 0,
+      "single_errors": 0
+    }
+  },
+  "fragile": [
+    {
+      "item": "req-en-01-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.9423,
+        0.9175,
+        0.2234
+      ]
+    },
+    {
+      "item": "req-en-02-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.9004,
+        0.8812,
+        0.2337
+      ]
+    },
+    {
+      "item": "req-en-03-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.9101,
+        0.901,
+        0.1859
+      ]
+    },
+    {
+      "item": "req-en-04-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.825,
+        0.8155,
+        0.3794
+      ]
+    },
+    {
+      "item": "req-ja-08-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.9612,
+        0.9449,
+        0.4475
+      ]
+    },
+    {
+      "item": "req-ja-09-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.4036,
+        0.6266,
+        0.3078
+      ]
+    },
+    {
+      "item": "req-ja-10-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.947,
+        0.9432,
+        0.2751
+      ]
+    },
+    {
+      "item": "req-ja-10-missing",
+      "question": "requirements_sufficient",
+      "gold": false,
+      "p": [
+        0.0524,
+        0.0533,
+        0.3914
+      ]
+    },
+    {
+      "item": "req-zh-05-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.9255,
+        0.8993,
+        0.3702
+      ]
+    },
+    {
+      "item": "req-zh-06-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.8284,
+        0.7883,
+        0.2069
+      ]
+    },
+    {
+      "item": "req-zh-07-complete",
+      "question": "requirements_sufficient",
+      "gold": true,
+      "p": [
+        0.9289,
+        0.9226,
+        0.3757
+      ]
+    },
+    {
+      "item": "req-zh-07-missing",
+      "question": "requirements_sufficient",
+      "gold": false,
+      "p": [
+        0.0971,
+        0.0947,
+        0.4168
+      ]
+    },
+    {
+      "item": "views-en-01-changed-cpn",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0152,
+        0.0258,
+        0.8418
+      ]
+    },
+    {
+      "item": "views-en-01-equal-reorder",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9674,
+        0.9649,
+        0.2783
+      ]
+    },
+    {
+      "item": "views-en-02-changed-md",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0127,
+        0.0251,
+        0.637
+      ]
+    },
+    {
+      "item": "views-en-02-equal-md",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9587,
+        0.9532,
+        0.3208
+      ]
+    },
+    {
+      "item": "views-en-03-changed-cpn",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0197,
+        0.039,
+        0.5775
+      ]
+    },
+    {
+      "item": "views-en-03-equal-md",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9451,
+        0.9312,
+        0.2408
+      ]
+    },
+    {
+      "item": "views-en-04-changed-md",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0305,
+        0.0764,
+        0.6298
+      ]
+    },
+    {
+      "item": "views-en-04-equal-reorder",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9537,
+        0.9538,
+        0.3486
+      ]
+    },
+    {
+      "item": "views-en-05-changed-cpn",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0175,
+        0.0276,
+        0.7372
+      ]
+    },
+    {
+      "item": "views-en-05-equal-reorder",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9617,
+        0.9633,
+        0.3812
+      ]
+    },
+    {
+      "item": "views-ja-01-equal-reorder",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9647,
+        0.9556,
+        0.2173
+      ]
+    },
+    {
+      "item": "views-ja-02-changed-cpn",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0246,
+        0.0272,
+        0.3961
+      ]
+    },
+    {
+      "item": "views-ja-02-equal-md",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9489,
+        0.9489,
+        0.3868
+      ]
+    },
+    {
+      "item": "views-zh-01-changed-cpn",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0154,
+        0.0269,
+        0.7549
+      ]
+    },
+    {
+      "item": "views-zh-01-equal-md",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9575,
+        0.9534,
+        0.5234
+      ]
+    },
+    {
+      "item": "views-zh-02-changed-md",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0176,
+        0.0385,
+        0.8141
+      ]
+    },
+    {
+      "item": "views-zh-02-equal-reorder",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9631,
+        0.9594,
+        0.1722
+      ]
+    },
+    {
+      "item": "views-zh-03-changed-cpn",
+      "question": "views_equivalent",
+      "gold": false,
+      "p": [
+        0.0134,
+        0.0219,
+        0.8019
+      ]
+    },
+    {
+      "item": "views-zh-03-equal-md",
+      "question": "views_equivalent",
+      "gold": true,
+      "p": [
+        0.9427,
+        0.9395,
+        0.3329
+      ]
+    }
+  ]
+}
