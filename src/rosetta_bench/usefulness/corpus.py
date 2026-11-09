@@ -1,29 +1,51 @@
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from rosetta_core.human_doc import extract_notes
 from rosetta_core.loader import load_prompt
 
 
+KINDS = ("code", "no_code", "docs_edit", "translation_review", "data_query", "clarify", "unsolvable", "false_premise")
+SOLVABLE_KINDS = ("code", "docs_edit", "translation_review", "data_query", "clarify")
+
+
 @dataclass(frozen=True)
 class UsefulnessTask:
     task_id: str
-    kind: str  # "code" (hidden tests decide) or "no_code" (success = no code produced)
+    kind: str  # one of KINDS; the verifier registry (verify.py) decides success per kind
     language: str
     entry_point: str | None
     request_text: str
     expected_route: str | None
+    check: dict = field(default_factory=dict, hash=False)  # kind-specific success parameters
+    tags: tuple = ()  # e.g. kobayashi_maru, true_premise_control, nowin_near_miss
 
 
 def load_tasks(corpus_dir: Path) -> list[UsefulnessTask]:
     lines = (Path(corpus_dir) / "tasks.jsonl").read_text(encoding="utf-8").splitlines()
-    return [UsefulnessTask(**json.loads(line)) for line in lines if line.strip()]
+    tasks = []
+    for line in lines:
+        if line.strip():
+            raw = json.loads(line)
+            raw["tags"] = tuple(raw.get("tags", ()))
+            raw["check"] = raw.get("check") or {}
+            tasks.append(UsefulnessTask(**raw))
+    return tasks
 
 
 def hidden_tests(corpus_dir: Path, task: UsefulnessTask) -> str:
     return (Path(corpus_dir) / "hidden_tests" / f"test_{task.task_id}.py").read_text(encoding="utf-8")
+
+
+def corpus_config(corpus_dir: Path) -> dict:
+    """Optional corpus.json: baseline_route (the route used without a decision layer, default
+    code_change) and catalogue_exclude (routes a decider may not choose, e.g. that baseline)."""
+    path = Path(corpus_dir) / "corpus.json"
+    config = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    return {"baseline_route": config.get("baseline_route", "code_change"),
+            "catalogue_exclude": list(config.get("catalogue_exclude", []))}
 
 
 def route_ids(corpus_dir: Path) -> list[str]:

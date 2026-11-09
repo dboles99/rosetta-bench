@@ -1,0 +1,13 @@
+{
+  "fields": {
+    "DELIVERABLE": "complete-python-module",
+    "IF_NOT_A_CODE_CHANGE": "reply NOT_A_CODE_TASK",
+    "IF_PREMISE_FALSE": "reply PREMISE_REJECTED: <which premise is false and why>",
+    "IF_UNSOLVABLE": "reply UNSOLVABLE: <one-line reason naming the conflicting or impossible requirements>",
+    "OUTPUT_FORMAT": "one-fenced-python-block,no-prose",
+    "ROUTE": "code_change",
+    "RUNTIME": "python3.12,stdlib-only",
+    "SCOPE": "implement-exactly-the-requested-functions-and-classes"
+  },
+  "schema_ver": "1.0"
+}

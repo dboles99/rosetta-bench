@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "required": [
+    "DELIVERABLE",
+    "IF_NOT_A_CODE_CHANGE",
+    "IF_PREMISE_FALSE",
+    "IF_UNSOLVABLE",
+    "OUTPUT_FORMAT",
+    "ROUTE",
+    "RUNTIME",
+    "SCOPE",
+    "SCHEMA_VER"
+  ],
+  "properties": {
+    "DELIVERABLE": {
+      "type": "string"
+    },
+    "IF_NOT_A_CODE_CHANGE": {
+      "type": "string"
+    },
+    "IF_PREMISE_FALSE": {
+      "type": "string"
+    },
+    "IF_UNSOLVABLE": {
+      "type": "string"
+    },
+    "OUTPUT_FORMAT": {
+      "type": "string"
+    },
+    "ROUTE": {
+      "type": "string"
+    },
+    "RUNTIME": {
+      "type": "string"
+    },
+    "SCOPE": {
+      "type": "string"
+    },
+    "SCHEMA_VER": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    }
+  }
+}
