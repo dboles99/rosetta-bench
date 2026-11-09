@@ -1,0 +1,102 @@
+{
+  "arms": {
+    "think_on": {
+      "samples": 3,
+      "tasks": 66,
+      "trials": 198,
+      "accuracy": 0.898989898989899,
+      "tokens_per_success": 4040.5955056179773,
+      "reasoning_tokens_mean": 2970.742424242424,
+      "p50_ms": 6955.879000015557,
+      "p95_ms": 145621.08839995926
+    },
+    "reason_first": {
+      "samples": 3,
+      "tasks": 66,
+      "trials": 198,
+      "accuracy": 0.7777777777777778,
+      "tokens_per_success": 3584.396103896104,
+      "reasoning_tokens_mean": 1176.090909090909,
+      "p50_ms": 8011.578999983612,
+      "p95_ms": 41591.06169996085
+    },
+    "think_off": {
+      "samples": 3,
+      "tasks": 66,
+      "trials": 198,
+      "accuracy": 0.6262626262626263,
+      "tokens_per_success": 1178.8709677419354,
+      "reasoning_tokens_mean": 0.0,
+      "p50_ms": 2255.352900014259,
+      "p95_ms": 8294.854499981739
+    }
+  },
+  "contrasts": {
+    "think_on vs reason_first": {
+      "tasks": 66,
+      "better": 21,
+      "worse": 4,
+      "accuracy": {
+        "items": 66,
+        "mean_diff": 0.12121212121212122,
+        "ci_low": 0.050505050505050504,
+        "ci_high": 0.19191919191919193,
+        "note": ""
+      },
+      "tokens_per_task": {
+        "items": 66,
+        "mean_diff": 844.5909090909091,
+        "ci_low": 209.01515151515147,
+        "ci_high": 1577.9545454545455,
+        "note": ""
+      },
+      "mcnemar_p": 0.109375,
+      "items_needed_for_5pp": 476,
+      "power_ratio": 0.13865546218487396
+    },
+    "think_on vs think_off": {
+      "tasks": 66,
+      "better": 27,
+      "worse": 3,
+      "accuracy": {
+        "items": 66,
+        "mean_diff": 0.2727272727272727,
+        "ci_low": 0.1717171717171717,
+        "ci_high": 0.37373737373737376,
+        "note": ""
+      },
+      "tokens_per_task": {
+        "items": 66,
+        "mean_diff": 2894.1717171717173,
+        "ci_low": 1894.1161616161617,
+        "ci_high": 4094.4343434343436,
+        "note": ""
+      },
+      "mcnemar_p": 0.00012111663818359375,
+      "items_needed_for_5pp": 1047,
+      "power_ratio": 0.06303724928366762
+    },
+    "reason_first vs think_off": {
+      "tasks": 66,
+      "better": 19,
+      "worse": 5,
+      "accuracy": {
+        "items": 66,
+        "mean_diff": 0.15151515151515152,
+        "ci_low": 0.06565656565656565,
+        "ci_high": 0.24242424242424243,
+        "note": ""
+      },
+      "tokens_per_task": {
+        "items": 66,
+        "mean_diff": 2049.5808080808083,
+        "ci_low": 1577.8080808080808,
+        "ci_high": 2688.191919191919,
+        "note": ""
+      },
+      "mcnemar_p": 0.004180908203125,
+      "items_needed_for_5pp": 762,
+      "power_ratio": 0.08661417322834646
+    }
+  }
+}

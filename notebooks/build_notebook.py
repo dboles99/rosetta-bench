@@ -26,7 +26,8 @@ Reads `results/rosetta_bench.sqlite`, which `bench results db` rebuilds from the
 - **Outcome**: hidden acceptance tests in a Docker sandbox for code tasks; *no code produced* for no-code requests.
 
 **Read the caveats before the numbers**: small task sets, author-written labels for the routing smoke corpus,
-placeholder (uncalibrated) thresholds, one temperature-0 sample per prompt. Smoke runs establish wiring, not performance."""),
+placeholder (uncalibrated) thresholds. Sections 2-4 are one temperature-0 sample per prompt; section 5 pools three
+samples per arm. Smoke runs establish wiring, not performance. Narrative and follow-ups: `results/INSIGHTS.md`."""),
     code("""import json, sqlite3
 from pathlib import Path
 import pandas as pd
@@ -51,8 +52,8 @@ print(f"database: {DB.resolve()}")"""),
     code("""runs = q("SELECT path, kind, run_id, created_at, synthetic, live FROM runs ORDER BY path")
 log = pd.read_json(Path("..") / "results" / "runs.jsonl", lines=True)[["path", "note"]]
 runs.merge(log, on="path", how="left")"""),
-    md("## 2. Representation × decision matrix\n\nThe latest **live** usefulness run. Each arm is charged the tokens and time of the generation, decision and sandbox calls it used."),
-    code("""run = q("SELECT path FROM runs WHERE kind='usefulness' AND live=1 ORDER BY created_at DESC LIMIT 1").path[0]
+    md("## 2. Representation × decision matrix\n\nThe live 12-arm matrix run (`2026-11-09_09`, usefulness_v1). Each arm is charged the tokens and time of the generation, decision and sandbox calls it used."),
+    code("""run = 'runs/2026-11-09_09_usefulness-matrix-live'
 trials = q("SELECT * FROM usefulness_trials WHERE run_path=?", run)
 trials["tokens"] = trials.generator_tokens_in + trials.generator_tokens_out + trials.decision_tokens
 REPS, DECIDERS = ["P", "H", "M"], ["none", "jevmodel", "clef-ollama", "consensus"]
@@ -167,12 +168,80 @@ ax.set_xlabel("route_fits probability (yes)")
 ax.set_title(f"route_fits by label, question set {latest.question_set.max()}", loc="left")
 ax.grid(axis="y", visible=False); ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5))
 plt.tight_layout(); plt.show()"""),
-    md("## 5. Probes and receipts"),
+    md("""## 5. Thinking, reason-first and no thinking, three samples per arm
+
+usefulness_v2 (66 tasks), no decider, `kimi-k2.7-code:cloud`. **think on** / **think off**: the M arm with the
+generator's thinking on or off. **reason-first**: a planner with thinking on writes a Rosetta plan packet (schema 1.1),
+then an executor with thinking off follows it. Samples: temperature 0 (seed 20261109), then 0.6 (seeds 20261110 and
+20261111). Intervals and McNemar come from `bench usefulness compare` (`results/COMPARISON_3x3.json`); McNemar uses each
+task's majority outcome. Run `_20` (plan schema 1.0, defective hand-off) is excluded."""),
+    code("""ARMS = {"think on": ("18", "24", "27"), "reason-first": ("23", "26", "29"), "think off": ("19", "25", "28")}
+parts = []
+for arm, samples in ARMS.items():
+    for s in samples:
+        t = q("SELECT * FROM usefulness_trials WHERE run_path LIKE ?", f"runs/2026-11-09_{s}_%")
+        parts.append(t.assign(arm=arm, sample=s))
+rep = pd.concat(parts)
+rep["group"] = rep.kind.where(rep.kind.isin(["code", "unsolvable", "false_premise"]), "other kinds")
+LABELS = ["t 0, seed 20261109", "t 0.6, seed 20261110", "t 0.6, seed 20261111"]
+totals = rep.groupby(["arm", "sample"]).success.sum()
+per_sample = pd.DataFrame([[totals[(arm, s)] for s in samples] + [", ".join(samples)] for arm, samples in ARMS.items()],
+                          index=list(ARMS), columns=LABELS + ["runs"])
+cmp = json.loads((Path("..") / "results" / "COMPARISON_3x3.json").read_text(encoding="utf-8"))
+arms = pd.DataFrame(cmp["arms"]).T[["samples", "accuracy", "tokens_per_success", "reasoning_tokens_mean", "p50_ms", "p95_ms"]]
+contrasts = pd.DataFrame({name: {"A−B accuracy": c["accuracy"]["mean_diff"], "95% CI low": c["accuracy"]["ci_low"],
+                                 "95% CI high": c["accuracy"]["ci_high"], "McNemar p": c["mcnemar_p"],
+                                 "tasks needed for 5 pp": c["items_needed_for_5pp"]}
+                          for name, c in cmp["contrasts"].items()}).T
+display(per_sample.rename_axis("verified successes of 66"))
+display(arms.astype(float).round(3))
+contrasts.astype(float).round(3)"""),
+    code("""GROUPS = ["code", "unsolvable", "false_premise", "other kinds"]
+acc = rep.pivot_table(index="group", columns="arm", values="success", aggfunc="mean").reindex(GROUPS)[list(ARMS)]
+n = rep[rep.arm == "think on"].groupby("group").size().reindex(GROUPS)
+fig, ax = plt.subplots(figsize=(8.5, 3.8))
+width = 0.26
+for i, arm in enumerate(ARMS):
+    xs = [g + (i - 1) * (width + 0.02) for g in range(len(GROUPS))]
+    bars = ax.bar(xs, acc[arm], width, color=SERIES[i], label=arm, edgecolor=SURFACE, linewidth=2)
+    for x, v in zip(xs, acc[arm]):
+        ax.text(x, v + 0.02, f"{v:.2f}", ha="center", fontsize=8, color=INK2)
+ax.set_xticks(range(len(GROUPS)), [f"{g}\\n({n[g]} trials per arm)" for g in GROUPS])
+ax.set_ylim(0, 1.12); ax.set_ylabel("share verified"); ax.grid(axis="x", visible=False)
+ax.set_title("Verified success by task kind, 3 samples pooled", loc="left")
+ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5))
+plt.tight_layout(); plt.show()
+acc.round(2)"""),
+    md("""## 6. Decision questions (decision_v1, 142 by-construction items)
+
+Clef on the full corpus (`_11`), Jev on the 30-item subset its free tokens allowed (`_21`), and the paraphrase ensemble
+on clef (`_22`: each yes/no question in 3 wordings; *single* is the pinned wording)."""),
+    code("""ev = q(\"\"\"SELECT qid, run_path, n, round(accuracy, 3) AS accuracy, abstain, false_pass, over_refusal FROM eval_metrics
+          WHERE scope='all' AND run_path IN ('runs/2026-11-09_11_decision-eval-clef', 'runs/2026-11-09_21_decision-eval-jevmodel-subset')
+          ORDER BY qid, run_path\"\"\")
+ev["provider"] = ev.run_path.map(lambda p: "jev (subset)" if "jevmodel" in p else "clef")
+lang = q("SELECT qid, scope_value AS language, accuracy FROM eval_metrics WHERE run_path='runs/2026-11-09_11_decision-eval-clef' AND scope='language'")
+ens = json.loads((Path("..") / "results" / "runs" / "2026-11-09_22_decision-eval-clef-paraphrase" / "ensemble.json").read_text(encoding="utf-8"))
+ens_tab = pd.DataFrame({name: {"items": v["n"], "single": v["single"]["accuracy"], "mean of 3": v["ensemble"]["accuracy"],
+                               "majority": v["majority"]["accuracy"], "AUROC spread": v["spread_auroc"],
+                               "AUROC margin doubt": v["margin_auroc"]}
+                        for name, v in {"all": ens["overall"], **ens["by_question"]}.items()}).T
+display(ev.drop(columns="run_path").set_index(["qid", "provider"]))
+display(lang.pivot_table(index="qid", columns="language", values="accuracy").round(3).rename_axis("clef accuracy by language"))
+ens_tab.astype(float).round(3)"""),
+    md("## 7. Probes and receipts"),
     code("""display(q("SELECT run_path, provider, requested_model, served_model, http_status, input_tokens, tokens_remaining, round(elapsed_ms) AS ms, error_json FROM probes ORDER BY run_path"))
 q("SELECT mode, provider, cost_basis, COUNT(*) AS receipts, SUM(verified_success) AS verified FROM receipts GROUP BY mode, provider, cost_basis ORDER BY mode, provider")"""),
-    md("""## 6. Reading these results
+    md("""## 8. Reading these results
 
-- **Ceiling.** On these 18 tasks every arm verified 18/18, so accuracy cannot separate the arms; the tasks are too easy for
+- **Thinking carries the honest refusals** (section 5): with it the generator refuses all unsolvable tasks; without it,
+  it rarely refuses and never rejects a false premise. That costs about 11 times the output tokens.
+- **Reason-first** keeps most of the refusals at about half the output tokens, but loses on code, because the executor
+  runs without thinking. It is not a tie with thinking on (0.12 lower, interval excludes zero).
+- **Power.** 66 tasks cannot resolve a 5-point difference (about 500-1,000 needed); a non-significant contrast is not a tie.
+- **Decision questions** (section 6): the single answer's margin from 0.5 is a near-perfect error signal on clef; asking
+  in three wordings adds nothing and exposed two wordings that break.
+- **Ceiling (sections 2-4).** On these 18 tasks every arm verified 18/18, so accuracy cannot separate the arms; the tasks are too easy for
   `kimi-k2.7-code:cloud`, and the baseline contract already makes the generator decline no-code requests.
 - **Cost of a decision layer.** With nothing to gain in accuracy, the decision calls only add tokens and time here. A decision
   layer can pay off only where it avoids expensive work or catches failures the baseline misses — which needs harder tasks,

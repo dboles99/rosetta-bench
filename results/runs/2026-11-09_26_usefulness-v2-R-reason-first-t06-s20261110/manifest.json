@@ -1,0 +1,136 @@
+{
+  "schema": "rosetta-bench/usefulness-matrix@1",
+  "run_id": "use-6d2235436c9e",
+  "created_at": "2026-11-09T05:45:42+00:00",
+  "corpus_dir": "G:\\dev2\\rosetta-bench\\.worktrees\\exp-decision-layer\\corpus\\usefulness_v2",
+  "corpus_digest": "ce6d2e09a20c8debd0f46bb7aac77aafedef539df55ea9374d394cec0192f89d",
+  "representations": {
+    "R": "reason-first: a planner (reasoning on) writes a plan, rosetta-core compiles it into a canonical packet, and the executor (reasoning off) follows the M contract plus the plan"
+  },
+  "baseline_route": "general",
+  "deciders": [
+    "none"
+  ],
+  "arms": [
+    "R+none"
+  ],
+  "generator": {
+    "kind": "ollama",
+    "model": "kimi-k2.7-code:cloud",
+    "host": "http://localhost:11434",
+    "timeout_s": 600.0,
+    "settings": {
+      "temperature": 0.6,
+      "seed": 20261110,
+      "think": false
+    }
+  },
+  "planner": {
+    "kind": "ollama",
+    "model": "kimi-k2.7-code:cloud",
+    "settings": {
+      "temperature": 0.6,
+      "seed": 20261110,
+      "think": true
+    }
+  },
+  "providers": {},
+  "question_sets": {
+    "intake": {
+      "version": "1.1",
+      "hash": "d2d6b6f07aa364901e51a6022fde4d9ed7694be702ea13db111e194bda93803e"
+    },
+    "postflight": {
+      "version": "1.0",
+      "hash": "a3d505e80918e1999ff4ff0fd36705ad730385eae6325b8edc9d8bc4627f61ef"
+    }
+  },
+  "postflight_reps": [],
+  "synthetic": false,
+  "live": true,
+  "seed": 20261110,
+  "order": [
+    "R+none:h22",
+    "R+none:d02",
+    "R+none:t03",
+    "R+none:x03",
+    "R+none:h04",
+    "R+none:h18",
+    "R+none:h25",
+    "R+none:h20",
+    "R+none:x01",
+    "R+none:f01",
+    "R+none:h01",
+    "R+none:h19",
+    "R+none:n03",
+    "R+none:h31",
+    "R+none:h28",
+    "R+none:n05",
+    "R+none:n01",
+    "R+none:h07",
+    "R+none:h27",
+    "R+none:k01",
+    "R+none:n02",
+    "R+none:h08",
+    "R+none:e02",
+    "R+none:h13",
+    "R+none:d01",
+    "R+none:h06",
+    "R+none:h03",
+    "R+none:h02",
+    "R+none:h16",
+    "R+none:h30",
+    "R+none:x02",
+    "R+none:h33",
+    "R+none:h05",
+    "R+none:h17",
+    "R+none:k03",
+    "R+none:h11",
+    "R+none:h10",
+    "R+none:h14",
+    "R+none:d03",
+    "R+none:h32",
+    "R+none:f04",
+    "R+none:q01",
+    "R+none:t01",
+    "R+none:d04",
+    "R+none:h29",
+    "R+none:f05",
+    "R+none:k02",
+    "R+none:n04",
+    "R+none:h09",
+    "R+none:e03",
+    "R+none:h26",
+    "R+none:e01",
+    "R+none:f02",
+    "R+none:t02",
+    "R+none:d05",
+    "R+none:h15",
+    "R+none:q02",
+    "R+none:f03",
+    "R+none:h12",
+    "R+none:h21",
+    "R+none:h24",
+    "R+none:x04",
+    "R+none:k04",
+    "R+none:q03",
+    "R+none:h23",
+    "R+none:f06"
+  ],
+  "repos": {
+    "core": {
+      "sha": "544c1234198029833e4cf4d0a16ddb034594a35b",
+      "dirty": false
+    },
+    "bench": {
+      "sha": "e152925fd16866a65e19e77d3814620b23075873",
+      "dirty": true
+    }
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "accounting": "Identical prompts share one generation and identical code one sandbox run; each arm is charged the original call's tokens and time. Decisions are made once per provider and task.",
+  "stopped_early": null
+}

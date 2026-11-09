@@ -1,0 +1,128 @@
+{
+  "schema": "rosetta-bench/usefulness-matrix@1",
+  "run_id": "use-4b7008c059f5",
+  "created_at": "2026-11-09T05:08:56+00:00",
+  "corpus_dir": "G:\\dev2\\rosetta-bench\\.worktrees\\exp-decision-layer\\corpus\\usefulness_v2",
+  "corpus_digest": "ce6d2e09a20c8debd0f46bb7aac77aafedef539df55ea9374d394cec0192f89d",
+  "representations": {
+    "M": "Rosetta machine view (.cpn packet, loaded by rosetta_core.loader)"
+  },
+  "baseline_route": "general",
+  "deciders": [
+    "none"
+  ],
+  "arms": [
+    "M+none"
+  ],
+  "generator": {
+    "kind": "ollama",
+    "model": "kimi-k2.7-code:cloud",
+    "host": "http://localhost:11434",
+    "timeout_s": 600.0,
+    "settings": {
+      "temperature": 0.6,
+      "seed": 20261110,
+      "think": true
+    }
+  },
+  "planner": null,
+  "providers": {},
+  "question_sets": {
+    "intake": {
+      "version": "1.1",
+      "hash": "d2d6b6f07aa364901e51a6022fde4d9ed7694be702ea13db111e194bda93803e"
+    },
+    "postflight": {
+      "version": "1.0",
+      "hash": "a3d505e80918e1999ff4ff0fd36705ad730385eae6325b8edc9d8bc4627f61ef"
+    }
+  },
+  "postflight_reps": [],
+  "synthetic": false,
+  "live": true,
+  "seed": 20261110,
+  "order": [
+    "M+none:h22",
+    "M+none:d02",
+    "M+none:t03",
+    "M+none:x03",
+    "M+none:h04",
+    "M+none:h18",
+    "M+none:h25",
+    "M+none:h20",
+    "M+none:x01",
+    "M+none:f01",
+    "M+none:h01",
+    "M+none:h19",
+    "M+none:n03",
+    "M+none:h31",
+    "M+none:h28",
+    "M+none:n05",
+    "M+none:n01",
+    "M+none:h07",
+    "M+none:h27",
+    "M+none:k01",
+    "M+none:n02",
+    "M+none:h08",
+    "M+none:e02",
+    "M+none:h13",
+    "M+none:d01",
+    "M+none:h06",
+    "M+none:h03",
+    "M+none:h02",
+    "M+none:h16",
+    "M+none:h30",
+    "M+none:x02",
+    "M+none:h33",
+    "M+none:h05",
+    "M+none:h17",
+    "M+none:k03",
+    "M+none:h11",
+    "M+none:h10",
+    "M+none:h14",
+    "M+none:d03",
+    "M+none:h32",
+    "M+none:f04",
+    "M+none:q01",
+    "M+none:t01",
+    "M+none:d04",
+    "M+none:h29",
+    "M+none:f05",
+    "M+none:k02",
+    "M+none:n04",
+    "M+none:h09",
+    "M+none:e03",
+    "M+none:h26",
+    "M+none:e01",
+    "M+none:f02",
+    "M+none:t02",
+    "M+none:d05",
+    "M+none:h15",
+    "M+none:q02",
+    "M+none:f03",
+    "M+none:h12",
+    "M+none:h21",
+    "M+none:h24",
+    "M+none:x04",
+    "M+none:k04",
+    "M+none:q03",
+    "M+none:h23",
+    "M+none:f06"
+  ],
+  "repos": {
+    "core": {
+      "sha": "544c1234198029833e4cf4d0a16ddb034594a35b",
+      "dirty": false
+    },
+    "bench": {
+      "sha": "e152925fd16866a65e19e77d3814620b23075873",
+      "dirty": true
+    }
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "accounting": "Identical prompts share one generation and identical code one sandbox run; each arm is charged the original call's tokens and time. Decisions are made once per provider and task.",
+  "stopped_early": null
+}
