@@ -11,6 +11,7 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from .paraphrase import base_qid
 from .questions import PASS_ANSWER, ROSETTA_EXECUTION
 
 SUBSET_QIDS = {"kobayashi_maru": ("task_feasible", "premise_valid")}
@@ -38,7 +39,7 @@ def noul_metrics(rows: list[dict], qid: str) -> dict:
     answered = [r for r in rows if r["status"] == "answered"]
     decided = [r for r in answered if r["verdict"] in ("yes", "no")]
     correct = sum(1 for r in rows if r["correct"])
-    passing = PASS_ANSWER[qid]
+    passing = PASS_ANSWER[base_qid(qid)]
     pass_word = "yes" if passing else "no"
     block_word = "no" if passing else "yes"
     should_block = [r for r in rows if r["gold"] != passing]
@@ -172,7 +173,7 @@ def build_eval_report(run_dir: Path) -> str:
         *_HEAD,
     ]
     for qid, entry in m["questions"].items():
-        lines.append(_row(f"`{qid}`" + (" (Rosetta execution)" if qid in ROSETTA_EXECUTION else ""), entry["all"]))
+        lines.append(_row(f"`{qid}`" + (" (Rosetta execution)" if base_qid(qid) in ROSETTA_EXECUTION else ""), entry["all"]))
     for subset, per_q in m["subsets"].items():
         lines += ["", f"## Subset: {subset}", "",
                   "No-win items (gold: infeasible, premise false) and feasible near-misses (gold: feasible, premise true). "

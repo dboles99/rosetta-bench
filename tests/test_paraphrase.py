@@ -137,3 +137,16 @@ def test_cli_runs_a_paraphrased_eval_and_writes_the_ensemble_report(tmp_path: Pa
     assert main(["decision", "ensemble", "--run", str(out), "--out", str(report)]) == 0
     assert "Paraphrase ensemble" in report.read_text(encoding="utf-8")
     assert json.loads(report.with_suffix(".json").read_text(encoding="utf-8"))["overall"]["n"] >= 2
+
+
+def test_a_paraphrased_run_gets_per_wording_metrics_and_enters_the_results_db(tmp_path: Path):
+    from rosetta_bench.catalog import build_db
+    from rosetta_bench.decision.eval_report import compute_metrics
+
+    results = tmp_path / "results"
+    out = run_eval(CORPUS, PROFILES["fake"], FakeTransport(_oracle()), results / "runs" / "ens", seed=7,
+                   state_time=STATE_TIME, paraphrase=True, item_ids=["req-en-01-complete", "prem-en-01-false"])
+    metrics = compute_metrics(out)
+    assert "premise_valid__p2" in json.dumps(metrics)  # each wording reported under its own id
+    assert main(["results", "log", "--results", str(results), "--run", str(out), "--note", "t"]) == 0
+    build_db(results, results / "db.sqlite")

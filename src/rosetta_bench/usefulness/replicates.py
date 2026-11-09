@@ -93,7 +93,9 @@ def _f(value, digits=3):
 
 def render_comparison(result: dict) -> str:
     lines = ["# Arm comparison (paired by task)", "",
-             "Samples are averaged per task before comparing; intervals are percentile bootstraps over tasks.", "",
+             "Samples are averaged per task before comparing; intervals are percentile bootstraps over tasks. "
+             "McNemar uses each task's majority outcome (success in more than half of its samples), so a task split "
+             "evenly across an even number of samples counts as a failure there but still moves the bootstrap.", "",
              "| Arm | Samples | Tasks | Accuracy | Tokens per verified success | Mean reasoning tokens (est.) | p50 / p95 ms |",
              "|---|---|---|---|---|---|---|"]
     for label, arm in result["arms"].items():
