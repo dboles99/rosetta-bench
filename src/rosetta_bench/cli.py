@@ -90,6 +90,14 @@ def _decision_transport(args, profile):
 def _decision_command(args) -> int:
     from rosetta_bench.decision.profiles import PROFILES
 
+    if args.decision_command == "calibrate":
+        from rosetta_bench.calibration import calibrate, render_calibration
+
+        result = calibrate([Path(r) for r in args.run], args.question, args.alpha, args.delta, seed=args.seed)
+        Path(args.out).write_text(render_calibration(result), encoding="utf-8", newline="\n")
+        Path(args.out).with_suffix(".json").write_text(json.dumps(result, indent=2), encoding="utf-8", newline="\n")
+        print(f"wrote {args.out}: yes at p >= {result['thresholds']['t_yes']}, no at p <= {result['thresholds']['t_no']}")
+        return 0
     if args.decision_command in ("replay", "report"):
         from rosetta_bench.decision.evaluate import is_eval_run
 
@@ -326,6 +334,13 @@ def main(argv: list[str] | None = None) -> int:
 
     decision_parser = subparsers.add_parser("decision")
     decision_subparsers = decision_parser.add_subparsers(dest="decision_command", required=True)
+    calibrate_parser = decision_subparsers.add_parser("calibrate", help="fit abstention thresholds with a risk bound per direction")
+    calibrate_parser.add_argument("--run", action="append", required=True, help="decision-eval run folder (repeatable)")
+    calibrate_parser.add_argument("--question", required=True)
+    calibrate_parser.add_argument("--alpha", type=float, default=0.1, help="maximum false-pass / over-refusal rate")
+    calibrate_parser.add_argument("--delta", type=float, default=0.1, help="allowed probability that the bound fails")
+    calibrate_parser.add_argument("--seed", type=int, default=0)
+    calibrate_parser.add_argument("--out", required=True)
     for name in ("run", "probe", "eval"):
         sub = decision_subparsers.add_parser(name)
         sub.add_argument("--corpus", default="corpus/decision_v1" if name == "eval" else "corpus/routing_smoke")
