@@ -1,0 +1,107 @@
+arXiv API | search_query=abs:"semantic cache" AND abs:LLM | sortBy=relevance | max=12
+arXiv API | search_query=abs:"semantic caching" AND (abs:false OR abs:incorrect OR abs:attack OR abs:collision) | sortBy=relevance | max=12
+arXiv API | search_query=abs:"prompt caching" AND abs:"prefix" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"structured prompt" AND abs:"token" AND abs:reasoning | sortBy=relevance | max=12
+arXiv API | search_query=ti:"prompt format" OR ti:"prompt formatting" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"JSON" AND abs:"markdown" AND abs:prompt AND abs:performance | sortBy=relevance | max=12
+arXiv API | search_query=abs:"LLM routing" AND abs:cost | sortBy=relevance | max=12
+arXiv API | search_query=ti:cascade AND abs:"language model" AND abs:deferral | sortBy=relevance | max=12
+arXiv API | search_query=abs:"routing" AND abs:"reasoning models" AND abs:"thinking" | sortBy=relevance | max=12
+arXiv API | search_query=ti:overthinking AND abs:reasoning | sortBy=relevance | max=12
+arXiv API | search_query=abs:"thinking budget" OR abs:"reasoning budget" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"plan" AND abs:"execute" AND abs:"reasoning model" AND abs:"cost" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"LLM-as-a-judge" AND abs:calibration AND abs:abstain | sortBy=relevance | max=12
+arXiv API | search_query=abs:"selective prediction" AND abs:"language model" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"verbalized confidence" AND abs:"prompt" AND abs:sensitivity | sortBy=relevance | max=12
+arXiv API | search_query=abs:"conformal" AND abs:"LLM judge" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"false premise" AND abs:"reasoning model" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"unanswerable" AND abs:"abstention" AND abs:benchmark | sortBy=relevance | max=12
+arXiv API | search_query=abs:"over-refusal" AND abs:reasoning | sortBy=relevance | max=12
+arXiv API | search_query=abs:"reward hacking" AND abs:"coding" AND abs:"unit tests" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"special-casing" OR abs:"test tampering" OR abs:"modify the tests" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"impossible tasks" AND abs:"LLM" AND abs:agents | sortBy=relevance | max=12
+arXiv API | search_query=abs:"reward hacking" AND abs:detect AND abs:monitor | sortBy=relevance | max=12
+arXiv API | search_query=abs:"benchmark" AND abs:"saturation" AND abs:"language models" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"paired" AND abs:"bootstrap" AND abs:"LLM evaluation" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"statistical significance" AND abs:"LLM" AND abs:"small" AND abs:"evaluation" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"batch prompting" AND abs:accuracy | sortBy=relevance | max=12
+arXiv API | search_query=abs:"plan-then-execute" OR abs:"plan-and-execute" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"no thinking" AND abs:"reasoning models" AND abs:"tokens" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"prompt compression" AND abs:reasoning AND abs:"code" | sortBy=relevance | max=12
+OpenAlex | works?filter=title.search:LLMLingua  Compressing Prompts for Accelerated Inference of Large Language Models
+OpenAlex | works?filter=title.search:LLMLingua-2  Data Distillation for Efficient and Faithful Task-Agnostic Prompt Compression
+OpenAlex | works?filter=title.search:DSPy  Compiling Declarative Language Model Calls into Self-Improving Pipelines
+OpenAlex | works?filter=title.search:Let Me Speak Freely? A Study on the Impact of Format Restrictions on Performance of Large Language Models
+OpenAlex | works?filter=title.search:Batch Prompting  Efficient Inference with Large Language Model APIs
+OpenAlex | works?filter=title.search:FrugalGPT  How to Use Large Language Models While Reducing Cost and Improving Performance
+OpenAlex | works?filter=title.search:RouteLLM  Learning to Route LLMs with Preference Data
+OpenAlex | works?filter=title.search:Hybrid LLM  Cost-Efficient and Quality-Aware Query Routing
+OpenAlex | works?filter=title.search:Language Model Cascades  Token-level uncertainty and beyond
+OpenAlex | works?filter=title.search:Gatekeeper  Improving Model Cascades Through Confidence Tuning
+OpenAlex | works?filter=title.search:LLMRouterBench  A Massive Benchmark and Unified Framework for LLM Routing
+OpenAlex | works?filter=title.search:Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design
+OpenAlex | works?filter=title.search:State of What Art? A Call for Multi-Prompt LLM Evaluation
+OpenAlex | works?filter=title.search:Trust or Escalate  LLM Judges with Provable Guarantees for Human Agreement
+OpenAlex | works?filter=title.search:Just Ask for Calibration  Strategies for Eliciting Calibrated Confidence Scores
+OpenAlex | works?filter=title.search:Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs
+OpenAlex | works?filter=title.search:Efficient Memory Management for Large Language Model Serving with PagedAttention
+OpenAlex | works?filter=title.search:SGLang  Efficient Execution of Structured Language Model Programs
+OpenAlex | works?filter=title.search:Auditing Prompt Caching in Language Model APIs
+OpenAlex | works?filter=title.search:vCache  Verified Semantic Prompt Caching
+OpenAlex | works?filter=title.search:Agentic Plan Caching  Test-Time Memory for Fast and Cost-Efficient LLM Agents
+OpenAlex | works?filter=title.search:GPTCache  An Open-Source Semantic Cache for LLM Applications
+OpenAlex | works?filter=title.search:Plan-and-Solve Prompting  Improving Zero-Shot Chain-of-Thought Reasoning
+OpenAlex | works?filter=title.search:An LLM Compiler for Parallel Function Calling
+OpenAlex | works?filter=title.search:Skeleton-of-Thought  Prompting LLMs for Efficient Parallel Generation
+OpenAlex | works?filter=title.search:Do NOT Think That Much for 2+3=? On the Overthinking of o1-Like LLMs
+OpenAlex | works?filter=title.search:Token-Budget-Aware LLM Reasoning
+OpenAlex | works?filter=title.search:Inverse Scaling in Test-Time Compute
+OpenAlex | works?filter=title.search:Won't Get Fooled Again  Answering Questions with False Premises
+OpenAlex | works?filter=title.search:CREPE  Open-Domain Question Answering with False Presuppositions
+OpenAlex | works?filter=title.search:AbstentionBench  Reasoning LLMs Fail on Unanswerable Questions
+OpenAlex | works?filter=title.search:Know Your Limits  A Survey of Abstention in Large Language Models
+OpenAlex | works?filter=title.search:OR-Bench  An Over-Refusal Benchmark for Large Language Models
+OpenAlex | works?filter=title.search:Is It Thinking or Cheating? Detecting Implicit Reward Hacking by Measuring Reasoning Effort
+OpenAlex | works?filter=title.search:With Little Power Comes Great Responsibility
+OpenAlex | works?filter=title.search:Signal and Noise  A Framework for Reducing Uncertainty in Language Model Evaluation
+OpenAlex | works?filter=title.search:LiveCodeBench  Holistic and Contamination Free Evaluation of Large Language Models for Code
+OpenAlex | works?filter=title.search:Reasoning Models Can Be Effective Without Thinking
+OpenAlex | works?filter=title.search:Chain of Draft  Thinking Faster by Writing Less
+OpenAlex | works?filter=title.search:ImpossibleBench  Measuring LLMs' Propensity of Exploiting Test Cases
+DBLP | search/publ/api?q=FrugalGPT How to Use Large Language Models While Reducing Cost
+OpenReview API2 | notes/search?term=FrugalGPT How to Use Large Language Models While Reducing Cost
+OpenReview API2 | notes/search?term=RouteLLM Learning to Route LLMs with Preference Data
+OpenReview API2 | notes/search?term=Hybrid LLM Cost-Efficient and Quality-Aware Query Routing
+OpenReview API2 | notes/search?term=Language Model Cascades Token-level uncertainty and beyond
+OpenReview API2 | notes/search?term=Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design
+OpenReview API2 | notes/search?term=Can LLMs Express Their Uncertainty Empirical Evaluation of Confidence Elicitation
+OpenReview API2 | notes/search?term=Trust or Escalate LLM Judges with Provable Guarantees
+OpenReview API2 | notes/search?term=Auditing Prompt Caching in Language Model APIs
+OpenReview API2 | notes/search?term=vCache Verified Semantic Prompt Caching
+OpenReview API2 | notes/search?term=An LLM Compiler for Parallel Function Calling
+OpenReview API2 | notes/search?term=Skeleton-of-Thought Prompting LLMs for Efficient Parallel Generation
+OpenReview API2 | notes/search?term=Do NOT Think That Much for 2+3 Overthinking
+OpenReview API2 | notes/search?term=Token-Budget-Aware LLM Reasoning
+OpenReview API2 | notes/search?term=OR-Bench Over-Refusal Benchmark
+OpenReview API2 | notes/search?term=Is It Thinking or Cheating Detecting Implicit Reward Hacking
+OpenReview API2 | notes/search?term=LiveCodeBench Holistic and Contamination Free Evaluation
+OpenReview API2 | notes/search?term=DSPy Compiling Declarative Language Model Calls
+OpenReview API2 | notes/search?term=Mind Your Step (by Step) Chain-of-Thought can Reduce Performance
+OpenReview API2 | notes/search?term=Reasoning Models Can Be Effective Without Thinking
+OpenReview API2 | notes/search?term=Do Large Language Models Know What They Don't Know
+OpenReview API2 | notes/search?term=Inverse Scaling in Test-Time Compute
+OpenReview API2 | notes/search?term=ReWOO Decoupling Reasoning from Observations
+Crossref | works/10.18653/v1/2023.nlposs-1.24
+Crossref | works/10.18653/v1/2025.findings-acl.1274
+Crossref | works/10.18653/v1/2024.naacl-long.301
+Crossref | works/10.18653/v1/2023.emnlp-main.825
+Crossref | works/10.1162/tacl_a_00681
+Crossref | works/10.18653/v1/2026.findings-acl.1881
+Crossref | works/10.1109/IPDPS64566.2025.00117
+Crossref | works/10.52202/085713-5729
+Crossref | works/10.18653/v1/2023.acl-long.472
+Crossref | works?query.bibliographic=Do Large Language Models Know What They Don't Know Yin Findings
+arXiv API | search_query=abs:"LLM-as-a-judge" AND abs:"prompt" AND abs:"sensitivity" AND abs:"scores" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"canonical" AND abs:"cache" AND abs:"LLM" AND abs:"exact match" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"premise" AND abs:"coding" AND abs:"unsatisfiable" OR abs:"underspecified" AND abs:"code generation" | sortBy=relevance | max=12
+arXiv API | search_query=abs:"structured prompting" AND abs:"cost" AND abs:"routing" AND abs:"cascade" | sortBy=relevance | max=12
